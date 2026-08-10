@@ -89,16 +89,22 @@
   .top::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;
     background:repeating-linear-gradient(90deg,transparent 0 39px,var(--line-soft) 39px 40px)}
   .top>*{position:relative}
-  .brand{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:12px 0 9px}
+  .brand{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0 9px}
+  .brand>div:first-child{min-width:0}
   .brand h1{font-family:var(--f-display);font-size:20px;letter-spacing:.055em;text-transform:uppercase;
-            margin:0;font-weight:700}
+            margin:0;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .brand h1 span{color:var(--accent)}
   .brand .sub{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);
               font-weight:600;white-space:nowrap}
   .iconbtn{width:34px;height:34px;display:grid;place-items:center;border:1px solid var(--line);
            border-radius:8px;color:var(--ink-2);background:var(--surface)}
   .iconbtn:active{background:var(--surface-2)}
-  .headrow{display:flex;align-items:center;gap:8px}
+  .headrow{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+  /* tempo total do treino: fica no cabeçalho fixo, então acompanha a rolagem */
+  .stime{height:34px;padding:0 9px;display:grid;place-items:center;border:1px solid var(--accent);
+         border-radius:8px;background:var(--accent-soft);color:var(--accent);font-family:var(--f-mono);
+         font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+  .stime.done{border-color:var(--good);background:var(--good-soft);color:var(--good)}
 
   .weeks{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding-bottom:10px}
   .wk{border:1px solid var(--line);border-radius:8px;background:var(--surface);padding:7px 4px 6px;
@@ -229,7 +235,8 @@
   .logs{border-top:1px solid var(--line-soft);padding:11px 14px 13px;display:grid;gap:11px}
   .log .lh{font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);
            font-weight:700;margin-bottom:7px;display:flex;justify-content:space-between;gap:8px}
-  .log .lh .prev{color:var(--ink-2);letter-spacing:.02em;text-transform:none;font-family:var(--f-mono);
+  .log .lh .prev{display:flex;align-items:center;gap:7px;flex:0 0 auto;color:var(--ink-2);
+                 letter-spacing:.02em;text-transform:none;font-family:var(--f-mono);
                  font-size:11px;font-weight:500}
   .fields{display:flex;gap:7px;flex-wrap:wrap}
   .field{position:relative;flex:1 1 76px;min-width:76px}
@@ -291,13 +298,17 @@
         box-shadow:0 -10px 30px rgba(0,0,0,.28)}
   .dock.open{transform:translateY(0)}
   .dock.ring{border-top-color:var(--accent)}
-  .dockin{max-width:620px;margin:0 auto;display:flex;align-items:center;gap:11px}
-  .dock .lbl{font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
+  .dock.soon{border-top-color:var(--warn)}
+  .dock.soon .time{color:var(--warn)}
+  .dockin{max-width:620px;margin:0 auto;display:flex;align-items:center;gap:10px}
+  .dockin>div:first-child{min-width:0;flex:0 1 auto}
+  .dock .lbl{font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);
+             font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .dock .time{font-family:var(--f-mono);font-size:34px;font-weight:600;line-height:1;
               font-variant-numeric:tabular-nums;letter-spacing:-.02em}
   .dock.ring .time{color:var(--accent)}
-  .dock .ctrl{display:flex;gap:6px;margin-left:auto}
-  .dock .ctrl button{min-width:44px;height:44px;padding:0 10px;border:1px solid var(--line);
+  .dock .ctrl{display:flex;gap:5px;margin-left:auto;flex:0 0 auto}
+  .dock .ctrl button{min-width:40px;height:44px;padding:0 7px;border:1px solid var(--line);
                      border-radius:9px;background:var(--surface-2);font-family:var(--f-mono);
                      font-size:13px;font-weight:600;display:grid;place-items:center}
   .dock .ctrl button.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);
@@ -342,8 +353,93 @@
   .btnrow button.danger{color:#E0543C;border-color:rgba(224,84,60,.45)}
   .hint{color:var(--ink-3);font-size:12px;margin-top:12px;line-height:1.45}
 
+  /* ---------- simulado do TAF ---------- */
+  .mini{font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-2);font-weight:700;
+        border:1px solid var(--line);border-radius:5px;padding:4px 8px;background:var(--surface-2)}
+  .cd{display:flex;align-items:center;gap:13px;margin-top:16px;background:var(--surface);
+      border:1px solid var(--line);border-radius:var(--radius);padding:14px}
+  .cd.hot{border-color:var(--accent);background:var(--accent-soft)}
+  .cd .big{flex:0 0 auto;font-family:var(--f-display);font-size:38px;font-weight:700;line-height:.9;
+           letter-spacing:.02em;font-variant-numeric:tabular-nums}
+  .cd.hot .big{color:var(--accent)}
+  .cd .cl{font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
+  .cd .cp{color:var(--ink-2);font-size:12.5px;margin-top:3px}
+
+  .prova{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+         padding:13px 14px;margin-top:10px}
+  .prova.ok{border-color:var(--good)}
+  .prova .ph{display:flex;align-items:flex-start;gap:10px}
+  .prova .pn{flex:1;min-width:0}
+  .prova .pn h4{font-family:var(--f-display);font-size:17px;letter-spacing:.045em;text-transform:uppercase;
+                margin:0;font-weight:700;line-height:1.1}
+  .prova .pn .ps{color:var(--ink-3);font-size:12px;margin-top:2px}
+  .verd{flex:0 0 auto;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;
+        border-radius:5px;padding:4px 7px;border:1px solid var(--line);color:var(--ink-3);white-space:nowrap}
+  .verd.ok{background:var(--good-soft);border-color:var(--good);color:var(--good)}
+  .verd.no{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+  .prova .now{display:flex;align-items:baseline;gap:8px;margin-top:11px}
+  .prova .now b{font-family:var(--f-mono);font-size:25px;font-weight:600;line-height:1;
+                font-variant-numeric:tabular-nums}
+  .prova .now span{color:var(--ink-2);font-size:12.5px}
+  .prova .ev{color:var(--good);font-size:12.5px;margin-top:6px;font-weight:600}
+  .prova .ev.down{color:var(--warn)}
+  .rowin{display:flex;gap:7px;margin-top:11px}
+  .rowin input{flex:1;min-width:0;height:44px;background:var(--surface-2);border:1px solid var(--line);
+               border-radius:8px;padding:0 11px;font-family:var(--f-mono);font-size:15px;text-align:center;
+               font-variant-numeric:tabular-nums}
+  .rowin input:focus{border-color:var(--accent);outline:none}
+  .rowin button{flex:0 0 auto;height:44px;padding:0 14px;border:1px solid var(--accent);border-radius:8px;
+                background:var(--accent);color:var(--accent-ink);font-family:var(--f-display);font-size:14px;
+                letter-spacing:.06em;text-transform:uppercase;font-weight:700}
+  .rowin button.gh{background:var(--surface-2);border-color:var(--line);color:var(--ink);flex:1}
+  .meta2{display:flex;align-items:center;gap:9px;margin-top:11px;padding-top:10px;
+         border-top:1px solid var(--line-soft)}
+  .meta2 label{font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
+  .meta2 input{width:86px;height:36px;background:var(--surface-2);border:1px solid var(--line);
+               border-radius:7px;padding:0 9px;font-family:var(--f-mono);font-size:14px;text-align:center}
+  .meta2 input:focus{border-color:var(--accent);outline:none}
+  .meta2 .un{color:var(--ink-3);font-size:12px}
+  .hist{margin-top:11px;border-top:1px solid var(--line-soft);padding-top:9px;display:grid;gap:4px}
+  .hist .hl{display:flex;justify-content:space-between;align-items:center;font-family:var(--f-mono);
+            font-size:12px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+  .hist .del{color:var(--ink-3);font-size:16px;width:24px;height:24px;display:grid;place-items:center}
+
+  .dateip{flex:0 0 auto;height:40px;background:var(--surface-2);border:1px solid var(--line);
+          border-radius:8px;padding:0 10px;font-family:var(--f-mono);font-size:13px;color:var(--ink)}
+  .dateip:focus{border-color:var(--accent);outline:none}
+
+  /* ---------- aviso de versão nova ---------- */
+  .upd{position:fixed;left:0;right:0;top:0;z-index:95;display:none;align-items:center;gap:9px;
+       padding:calc(11px + env(safe-area-inset-top)) 14px 11px;background:var(--accent);
+       color:var(--accent-ink);box-shadow:0 6px 22px rgba(0,0,0,.32)}
+  .upd.open{display:flex}
+  .upd .ut{flex:1;min-width:0}
+  .upd .ut b{display:block;font-family:var(--f-display);font-size:15px;letter-spacing:.05em;
+             text-transform:uppercase;font-weight:700;line-height:1.1}
+  .upd .ut i{display:block;font-style:normal;font-size:12px;opacity:.8;margin-top:2px}
+  .upd button{flex:0 0 auto;height:36px;padding:0 13px;border-radius:8px;background:var(--accent-ink);
+              color:var(--accent);font-family:var(--f-display);font-size:13.5px;letter-spacing:.06em;
+              text-transform:uppercase;font-weight:700}
+  .upd button.x{width:30px;padding:0;background:transparent;color:var(--accent-ink);font-size:21px;
+                opacity:.75}
+
+  /* ---------- esforço da sessão ---------- */
+  .rpe{display:grid;gap:8px}
+  .rpe button{display:flex;align-items:center;gap:12px;min-height:58px;padding:9px 13px;
+              border:1px solid var(--line);border-radius:10px;background:var(--surface-2);text-align:left}
+  .rpe button:active{border-color:var(--accent);background:var(--accent-soft)}
+  .rpe button em{flex:0 0 auto;font-style:normal;font-size:23px;line-height:1}
+  .rpe button b{display:block;font-weight:600;font-size:14.5px}
+  .rpe button i{display:block;font-style:normal;color:var(--ink-2);font-size:12.5px;margin-top:1px}
+
   @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 </style>
+
+<div class="upd" id="upd">
+  <div class="ut"><b>Nova versão do app</b><i>Toque para carregar as novidades</i></div>
+  <button id="updGo">Atualizar</button>
+  <button class="x" id="updX" aria-label="Agora não">×</button>
+</div>
 
 <div class="wrap">
   <header class="top">
@@ -353,6 +449,7 @@
         <div class="sub" id="cycleLabel">Bloco base · semanas 1 a 4</div>
       </div>
       <div class="headrow">
+        <div class="stime" id="sessTime" style="display:none" title="Tempo total deste treino">0:00</div>
         <button class="iconbtn" id="btnStop" aria-label="Cronômetro">⏱</button>
         <button class="iconbtn" id="btnCfg" aria-label="Ajustes">⚙</button>
       </div>
@@ -366,6 +463,7 @@
 
 <nav class="tabs">
   <button id="tabTreino" aria-pressed="true">Treino</button>
+  <button id="tabSim" aria-pressed="false">Simulado</button>
   <button id="tabHist" aria-pressed="false">Histórico</button>
 </nav>
 
@@ -408,9 +506,31 @@
   </div>
 </div>
 
+<div class="sheet" id="rsheet">
+  <div class="panel">
+    <h3>Como foi este treino?</h3>
+    <p class="vsub" style="margin:-8px 0 15px">Fica guardado no histórico. É o que o professor precisa saber para
+      decidir se aumenta ou segura a carga.</p>
+    <div class="rpe" id="rpeBtns">
+      <button data-r="1"><em>😌</em><span><b>Tranquilo</b><i>Terminei com gás de sobra</i></span></button>
+      <button data-r="2"><em>😤</em><span><b>Na medida</b><i>Puxado, mas cumpri tudo que estava prescrito</i></span></button>
+      <button data-r="3"><em>🥵</em><span><b>Pesado demais</b><i>Não consegui manter o que estava na planilha</i></span></button>
+    </div>
+    <div class="btnrow"><button id="rSkip">Concluir sem responder</button></div>
+  </div>
+</div>
+
 <div class="sheet" id="sheet">
   <div class="panel">
     <h3>Ajustes e dados</h3>
+    <div class="opt">
+      <div><div class="ot">Versão do app</div><div class="od" id="verInfo">verificando…</div></div>
+      <button class="mini" id="btnVer">Procurar<br>atualização</button>
+    </div>
+    <div class="opt">
+      <div><div class="ot">Dia da prova</div><div class="od">Liga a contagem regressiva do TAF</div></div>
+      <input type="date" id="inProva" class="dateip" aria-label="Data da prova">
+    </div>
     <div class="opt">
       <div><div class="ot">Tema</div><div class="od">Automático segue o modo do celular</div></div>
       <div class="seg" id="segTema" role="group" aria-label="Tema do app">
@@ -427,6 +547,16 @@
       <div><div class="ot">Som e vibração</div><div class="od">Avisa quando o descanso termina</div></div>
       <button class="sw" id="swSound" aria-pressed="true"><i></i></button>
     </div>
+    <div class="opt">
+      <div><div class="ot">Tipo de aviso</div><div class="od">Toque para ouvir cada um</div></div>
+      <div class="seg" id="segSom" role="group" aria-label="Tipo de aviso sonoro">
+        <button data-s="despertador">Despertador</button>
+        <button data-s="apito">Apito</button>
+        <button data-s="gongo">Gongo</button>
+      </div>
+    </div>
+    <p class="hint" style="margin:8px 0 0">Sons do Wikimedia Commons: “Alarmclock-mechanical” de Dub
+      (CC BY-SA 3.0); apito de árbitro de SpliceSound e “Gong or bell vibrant” de stephan (domínio público).</p>
     <div class="opt">
       <div><div class="ot">Descanso automático</div><div class="od">Inicia a contagem ao marcar uma série</div></div>
       <button class="sw" id="swAuto" aria-pressed="true"><i></i></button>
@@ -653,9 +783,25 @@ var REG = {
    Estado
    ============================================================ */
 var KEY = "taf-pcpr-v1";
-var FIELDS = ["week","day","done","logs","notas","sess","vid"];
-var S = { week:1, day:0, tab:"treino", done:{}, logs:{}, notas:{}, sess:{}, vid:{},
-          cfg:{ wake:false, som:true, auto:true, tema:"auto" } };
+var FIELDS = ["week","day","done","logs","notas","sess","vid","taf","ini"];
+var S = { week:1, day:0, tab:"treino", done:{}, logs:{}, notas:{}, sess:{}, vid:{}, ini:{},
+          taf:{ metas:{}, tests:[] },
+          cfg:{ wake:false, som:true, somTipo:"despertador", auto:true, tema:"auto" } };
+
+/* ============================================================
+   As cinco provas do TAF. As METAS não vêm daqui: os índices
+   mudam por idade e sexo, então quem digita é o usuário, com o
+   edital na mão. O app só compara o resultado com o que ele
+   colocou — não inventa número de prova.
+   ============================================================ */
+var PROVAS = [
+  { id:"barra",   n:"Barra fixa",            s:"Máximo de repetições",        u:"reps", dir:1,  ph:"reps" },
+  { id:"abd",     n:"Abdominal remador",     s:"Repetições em 1 minuto",      u:"reps", dir:1,  ph:"reps",  timer:60 },
+  { id:"corrida", n:"Corrida de 12 minutos", s:"Distância percorrida",        u:"m",    dir:1,  ph:"metros", timer:720 },
+  { id:"shuttle", n:"Shuttle run",           s:"Tempo — quanto menor, melhor", u:"s",   dir:-1, ph:"segundos", dec:true },
+  { id:"corda",   n:"Escalada em corda",     s:"Conseguiu subir?",            u:"",     dir:1,  bool:true }
+];
+var RPEL = { 1:"😌 Tranquilo", 2:"😤 Na medida", 3:"🥵 Pesado demais" };
 
 function load(){
   try{
@@ -711,6 +857,13 @@ function fmt(sec){
   var m = Math.floor(sec/60), s = sec%60;
   return m + ":" + (s<10?"0":"") + s;
 }
+/* passa de uma hora vira h:mm:ss — treino longo não pode virar "83:12" */
+function fmtLongo(sec){
+  sec = Math.max(0, Math.round(sec));
+  var h = Math.floor(sec/3600), m = Math.floor((sec%3600)/60), s = sec%60;
+  if(!h) return m + ":" + (s<10?"0":"") + s;
+  return h + ":" + (m<10?"0":"") + m + ":" + (s<10?"0":"") + s;
+}
 function esc(str){
   return String(str).replace(/[&<>"]/g, function(c){
     return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c];
@@ -726,25 +879,127 @@ function hoje(){
   var p = function(n){ return (n<10?"0":"")+n; };
   return p(d.getDate())+"/"+p(d.getMonth()+1)+" · "+p(d.getHours())+":"+p(d.getMinutes());
 }
-
-/* ---------- som e vibração ---------- */
-var actx=null;
-function beep(times){
-  if(!S.cfg.som) return;
-  try{
-    if(navigator.vibrate) navigator.vibrate([160,90,160]);
-    if(!actx) actx = new (window.AudioContext||window.webkitAudioContext)();
-    if(actx.state==="suspended") actx.resume();
-    for(var i=0;i<(times||3);i++){
-      var o=actx.createOscillator(), g=actx.createGain(), t0=actx.currentTime+i*0.26;
-      o.type="square"; o.frequency.value = i===(times||3)-1 ? 1240 : 880;
-      g.gain.setValueAtTime(.0001,t0);
-      g.gain.exponentialRampToValueAtTime(.16,t0+.012);
-      g.gain.exponentialRampToValueAtTime(.0001,t0+.20);
-      o.connect(g); g.connect(actx.destination); o.start(t0); o.stop(t0+.22);
-    }
-  }catch(e){}
+function dataBr(){
+  var d = new Date(), p = function(n){ return (n<10?"0":"")+n; };
+  return p(d.getDate())+"/"+p(d.getMonth()+1)+"/"+d.getFullYear();
 }
+/* número curto, com vírgula decimal e sem zero à toa */
+function fmtNum(n){
+  n = Math.round(n*100)/100;
+  return String(n).replace(".",",");
+}
+/* dias que faltam para a prova; null se a data não foi definida */
+function diasProva(){
+  var s = S.cfg.prova;
+  if(!s) return null;
+  var p = String(s).split("-");
+  if(p.length!==3) return null;
+  var alvo = new Date(+p[0], +p[1]-1, +p[2]);
+  if(isNaN(alvo.getTime())) return null;
+  var hj = new Date(); hj.setHours(0,0,0,0); alvo.setHours(0,0,0,0);
+  return Math.round((alvo-hj)/86400000);
+}
+function dataProvaBr(){
+  var s = S.cfg.prova;
+  if(!s) return "";
+  var p = String(s).split("-");
+  return p.length===3 ? p[2]+"/"+p[1]+"/"+p[0] : "";
+}
+/* trecho curto para o resumo da sessão */
+function faltamTxt(){
+  var n = diasProva();
+  if(n===null || n<0) return "";
+  if(n===0) return " · a prova é hoje";
+  return " · prova em "+n+(n===1?" dia":" dias");
+}
+
+/* ---------- som e vibração ----------
+   O aviso é um som gravado (pasta sons/), não um bipe sintetizado: toque
+   monofônico soa a brinquedo e cansa em três séries. A síntese ficou só
+   como rede de segurança para quando o arquivo não estiver disponível. */
+var actx=null;
+function ac(){
+  if(!actx) actx = new (window.AudioContext||window.webkitAudioContext)();
+  if(actx.state==="suspended") actx.resume();
+  return actx;
+}
+/* pulso curto e cortado, o "bip" limpo de alarme de celular */
+function pulso(freq, t0, dur, vol){
+  var a = ac();
+  function voz(f, v, tipo){
+    var g = a.createGain();
+    g.gain.setValueAtTime(.0001, t0);
+    g.gain.exponentialRampToValueAtTime(v, t0+.006);
+    g.gain.setValueAtTime(v, t0+Math.max(dur-.03,.02));
+    g.gain.exponentialRampToValueAtTime(.0001, t0+dur);
+    g.connect(a.destination);
+    var o = a.createOscillator();
+    o.type = tipo; o.frequency.value = f;
+    o.connect(g); o.start(t0); o.stop(t0+dur+.03);
+  }
+  voz(freq, vol, "triangle");
+  voz(freq*3, vol*.22, "sine");   /* só um brilho por cima, para cortar o ruído da academia */
+}
+/* Sons de verdade, gravados: os arquivos ficam em sons/ e o service worker
+   guarda junto com o app, então continuam funcionando sem internet. Cada
+   opção é um arquivo só — o aviso de fim toca inteiro, a confirmação e a
+   contagem 3-2-1 tocam só o começo dele, mais baixo. Autoria e licença de
+   cada um estão em sons/CREDITOS.txt. */
+var SONS = ["despertador","apito","gongo"];
+var BUF = {};
+function carregaSom(tipo){
+  if(BUF[tipo]) return Promise.resolve(BUF[tipo]);
+  return fetch("sons/"+tipo+".mp3")
+    .then(function(r){ if(!r.ok) throw new Error("som"); return r.arrayBuffer(); })
+    .then(function(bytes){
+      return new Promise(function(ok, falhou){
+        var p = ac().decodeAudioData(bytes, ok, falhou);
+        if(p && p.then) p.then(ok, falhou);   /* navegadores novos devolvem promessa */
+      });
+    })
+    .then(function(buf){ BUF[tipo]=buf; return buf; });
+}
+/* dur = quanto tocar (0 = tudo); vol = 0 a 1 */
+function tocaSom(dur, vol){
+  var tipo = S.cfg.somTipo;
+  if(SONS.indexOf(tipo)<0) tipo = SONS[0];
+  carregaSom(tipo).then(function(buf){
+    var a = ac(), src = a.createBufferSource(), g = a.createGain(), t = a.currentTime + .01;
+    src.buffer = buf;
+    g.gain.setValueAtTime(vol, t);
+    if(dur){                                  /* corta com um fade curtinho, senão estala */
+      g.gain.setValueAtTime(vol, t+Math.max(dur-.05,.01));
+      g.gain.linearRampToValueAtTime(.0001, t+dur);
+    }
+    src.connect(g); g.connect(a.destination);
+    if(dur) src.start(t, 0, dur); else src.start(t);
+  }).catch(function(){
+    /* sem o arquivo (primeira abertura offline): cai no bipe sintetizado */
+    var t = ac().currentTime + .02;
+    for(var i=0;i<3;i++) pulso(880, t+i*.14, .085, vol*.22);
+  });
+}
+function vibra(p){
+  try{ if(navigator.vibrate) navigator.vibrate(p); }catch(e){}
+}
+function beep(n){
+  if(!S.cfg.som) return;
+  var forte = (n||3) >= 3;
+  vibra(forte ? [200,110,200,110,200] : [110]);
+  try{ tocaSom(forte ? 0 : .55, forte ? 1 : .75); }catch(e){}
+}
+/* contagem final (3, 2, 1): só a pontinha do som, baixinho — tem que dar
+   para diferenciar "está acabando" de "acabou" sem olhar a tela */
+function tick(){
+  if(!S.cfg.som) return;
+  vibra(40);
+  try{ tocaSom(.13, .40); }catch(e){}
+}
+/* No primeiro toque na tela o navegador libera o áudio: aproveita para já
+   baixar e decodificar o som escolhido, senão o primeiro aviso atrasa. */
+document.addEventListener("pointerdown", function(){
+  try{ ac(); carregaSom(SONS.indexOf(S.cfg.somTipo)<0 ? SONS[0] : S.cfg.somTipo); }catch(e){}
+}, { once:true });
 
 /* ---------- tela ligada ---------- */
 var wakeLock=null;
@@ -762,6 +1017,8 @@ document.addEventListener("visibilitychange", function(){
   applyWake();
   /* volta de segundo plano: reacerta o relógio na hora */
   if(T.mode && T.running) loop();
+  /* e aproveita para ver se saiu versão nova do app */
+  if(swReg) swReg.update().catch(function(){});
 });
 
 /* ============================================================
@@ -770,7 +1027,8 @@ document.addEventListener("visibilitychange", function(){
 /* O tempo vem sempre do relógio do aparelho (Date.now), nunca de deltas
    acumulados: se a tela apagar ou você trocar de app no meio do descanso,
    a contagem continua certa quando voltar. */
-var T = { mode:null, anchor:0, held:0, running:false, id:null, target:null, rang:false };
+var T = { mode:null, anchor:0, held:0, running:false, id:null, target:null, rang:false,
+          lastSec:0, inicial:0 };
 var dock = document.getElementById("dock");
 var dockTime = document.getElementById("dockTime");
 var dockLbl = document.getElementById("dockLbl");
@@ -790,11 +1048,19 @@ function setLeft(sec){
 }
 function loop(){
   if(!T.running) return;
-  if(T.mode==="rest" && tLeft()<=0){
-    T.running=false; T.held=0; T.rang=true;
-    stopLoop(); beep(3); dock.classList.add("ring"); render_dock();
-    setTimeout(function(){ if(T.rang) closeDock(); }, 8000);
-    return;
+  if(T.mode==="rest"){
+    var left = tLeft();
+    if(left<=0){
+      T.running=false; T.held=0; T.rang=true;
+      stopLoop(); beep(3);
+      dock.classList.remove("soon"); dock.classList.add("ring"); render_dock();
+      setTimeout(function(){ if(T.rang) closeDock(); }, 8000);
+      return;
+    }
+    /* contagem falada em bipes: 3, 2, 1 — dá para treinar sem olhar a tela */
+    var s = Math.ceil(left);
+    if(s<=3 && s>=1 && T.lastSec!==s){ T.lastSec=s; tick(); }
+    dock.classList.toggle("soon", left<=5);
   }
   render_dock();
 }
@@ -814,22 +1080,30 @@ function toggleRun(){
 function startRest(sec,label){
   if(!sec || sec<=0) return;
   T.mode="rest"; T.held=sec; T.running=true; T.anchor=Date.now()+sec*1000;
-  T.rang=false; T.target=null;
-  dock.classList.remove("ring"); dock.classList.add("open");
+  T.rang=false; T.target=null; T.lastSec=0; T.inicial=sec;
+  dock.classList.remove("ring","soon"); dock.classList.add("open");
   dockLbl.textContent = label || "Descanso";
   render_dock(); startLoop();
 }
 function startUp(target,label){
   T.mode="up"; T.held=0; T.running=true; T.anchor=Date.now();
-  T.rang=false; T.target=target||null;
-  dock.classList.remove("ring"); dock.classList.add("open");
+  T.rang=false; T.target=target||null; T.lastSec=0;
+  dock.classList.remove("ring","soon"); dock.classList.add("open");
   dockLbl.textContent = label || "Cronômetro";
   render_dock(); startLoop();
 }
 function closeDock(){
-  T.running=false; T.rang=false; T.mode=null; T.target=null; T.held=0;
+  T.running=false; T.rang=false; T.mode=null; T.target=null; T.held=0; T.lastSec=0;
   stopLoop();
-  dock.classList.remove("open","ring");
+  dock.classList.remove("open","ring","soon");
+}
+/* Volta o cronômetro ao ponto de partida e deixa parado, esperando o play:
+   é o "stop" — no descanso volta ao tempo cheio, no cronômetro volta a zero. */
+function zeraTempo(){
+  T.running = false; stopLoop(); T.lastSec = 0; T.rang = false;
+  T.held = T.mode==="rest" ? (T.inicial||0) : 0;
+  dock.classList.remove("ring","soon");
+  render_dock();
 }
 function render_dock(){
   dockTime.textContent = T.mode==="rest" ? fmt(tLeft()) : fmt(tUp());
@@ -838,14 +1112,15 @@ function render_dock(){
     if(T.rang){
       b.push(['pri','Ok', closeDock]);
     } else {
-      b.push(['','−15', function(){ setLeft(tLeft()-15); render_dock(); loop(); }]);
-      b.push(['','+15', function(){ setLeft(tLeft()+15); render_dock(); }]);
+      b.push(['','−15', function(){ setLeft(tLeft()-15); T.lastSec=0; render_dock(); loop(); }]);
+      b.push(['','+15', function(){ setLeft(tLeft()+15); T.lastSec=0; render_dock(); }]);
+      b.push(['','■', zeraTempo]);
       b.push(['', T.running?'❚❚':'▶', toggleRun]);
       b.push(['pri','Pular', closeDock]);
     }
   } else {
+    b.push(['','■', zeraTempo]);
     b.push(['', T.running?'❚❚':'▶', toggleRun]);
-    b.push(['','↺', function(){ T.held=0; T.anchor=Date.now(); render_dock(); }]);
     if(T.target){
       b.push(['pri','Salvar', function(){
         var v = Math.round(tUp());
@@ -867,6 +1142,35 @@ function render_dock(){
     dockCtrl.appendChild(btn);
   });
 }
+
+/* ============================================================
+   Tempo total do treino
+   Começa sozinho quando a primeira série da sessão é marcada e para
+   quando o treino é concluído. Assim como o cronômetro de descanso, o
+   tempo sai da diferença de relógio (Date.now), não de contagem
+   acumulada: fechar o app ou apagar a tela no meio não atrapalha.
+   ============================================================ */
+var sessTimeEl = document.getElementById("sessTime");
+
+function marcaInicio(w,d){
+  var nk = kSess(w,d);
+  if(!S.ini[nk]) S.ini[nk] = Date.now();
+}
+/* segundos decorridos, ou null se a sessão nem começou */
+function tempoSessao(w,d){
+  var nk = kSess(w,d), fim = S.sess[nk];
+  if(fim && fim.dur != null) return fim.dur;      /* concluído: valor congelado */
+  var t0 = S.ini[nk];
+  return t0 ? (Date.now()-t0)/1000 : null;
+}
+function renderSessTime(){
+  var seg = tempoSessao(S.week, S.day);
+  if(seg === null){ sessTimeEl.style.display = "none"; return; }
+  sessTimeEl.style.display = "";
+  sessTimeEl.textContent = fmtLongo(seg);
+  sessTimeEl.classList.toggle("done", !!S.sess[kSess(S.week,S.day)]);
+}
+setInterval(renderSessTime, 1000);
 
 /* ============================================================
    Render — cabeçalho
@@ -907,6 +1211,8 @@ function renderHead(){
   for(var d2=0; d2<PLAN.length; d2++){ if(!S.sess[kSess(4,d2)]) { allDone=false; break; } }
   document.getElementById("cycleLabel").textContent =
     allDone ? "Bloco de 4 semanas concluído" : "Bloco base · semanas 1 a 4";
+
+  renderSessTime();
 }
 
 /* ============================================================
@@ -914,6 +1220,7 @@ function renderHead(){
    ============================================================ */
 function renderView(){
   if(S.tab==="hist"){ renderHist(); return; }
+  if(S.tab==="sim"){ renderSim(); return; }
   var d = S.day, w = S.week, sx = PLAN[d];
   var tot = totalSets(w,d), fez = doneSets(w,d);
   var pct = tot ? fez/tot : 0;
@@ -945,7 +1252,7 @@ function renderView(){
     '</svg>'+
     '<div class="info"><h2>'+esc(sx.nome)+'</h2>'+
       '<p>'+esc(sx.foco)+'</p>'+
-      '<div class="cnt">'+fez+' de '+tot+' séries · Semana '+w+'</div>'+
+      '<div class="cnt">'+fez+' de '+tot+' séries · Semana '+w+esc(faltamTxt())+'</div>'+
     '</div></section>');
   viewEl.appendChild(meta);
 
@@ -1003,6 +1310,7 @@ function renderView(){
           if(S.done[k]){ delete S.done[k]; }
           else {
             S.done[k]=1;
+            marcaInicio(w,d);      /* primeira série marcada = treino começou */
             if(S.cfg.auto && cfg.r){
               startRest(cfg.r, cfg.ritmo ? "Próxima rodada · "+b.t : "Descanso · "+b.t);
             }
@@ -1017,6 +1325,7 @@ function renderView(){
         var k = kDone(w,d,b.id,i);
         if(full) delete S.done[k]; else S.done[k]=1;
       }
+      if(!full) marcaInicio(w,d);
       save(); renderHead(); renderView();
     });
     card.appendChild(sets);
@@ -1028,17 +1337,28 @@ function renderView(){
       cfg.it.forEach(function(it, ii){
         if(!it.reg) return;
         var meta2 = REG[it.reg.t];
-        var prev = prevWeek(d, b.id, ii, w, it.n);
+        var prev = prevSets(d, b.id, ii, w, it.n);
+        var prevTxt = prev ? "S"+prev.w+": "+prev.vals.filter(function(v){return v;}).join(" · ") : "";
         var box = el('<div class="log"><div class="lh">'+
           '<span>'+esc(it.n)+' · '+esc(it.reg.lbl||meta2.lbl)+(meta2.unid?" ("+meta2.unid+")":"")+'</span>'+
-          (prev?'<span class="prev">'+esc(prev)+'</span>':'')+
+          (prev?'<span class="prev">'+esc(prevTxt)+' <button class="mini" type="button" data-rep="1">Repetir</button></span>':'')+
           '</div><div class="fields"></div></div>');
         var fields = box.querySelector(".fields");
+        if(prev){
+          box.querySelector('[data-rep]').addEventListener("click", function(){
+            for(var i=0;i<cfg.s;i++){
+              var kk = kLog(w,d,b.id,ii,i);
+              if(!S.logs[kk] && prev.vals[i]) S.logs[kk] = prev.vals[i];
+            }
+            save(); renderView();
+          });
+        }
         for(var i=0;i<cfg.s;i++){
           (function(i){
             var k = kLog(w,d,b.id,ii,i);
+            var ph = (prev && prev.vals[i]) ? prev.vals[i] : meta2.ph;
             var f = el('<div class="field"><span>'+(cfg.s>1?"Série "+(i+1):"Marca")+'</span>'+
-              '<input inputmode="'+meta2.mode+'" placeholder="'+meta2.ph+'" '+
+              '<input inputmode="'+meta2.mode+'" placeholder="'+esc(ph)+'" '+
               'data-log="'+k+'" data-kind="'+it.reg.t+'" value="'+esc(S.logs[k]||"")+'"></div>');
             if(meta2.crono){
               var cb = el('<button class="stop" type="button" aria-label="Cronometrar">⏱</button>');
@@ -1076,11 +1396,10 @@ function renderView(){
   /* concluir */
   var fin = S.sess[nk];
   var fb = el('<button class="finish'+(fin?" is-done":"")+'">'+
-    (fin? "Concluído em "+esc(fin.data) : "Concluir treino")+'</button>');
+    (fin? "Concluído em "+esc(fin.data)+(fin.rpe?" · "+RPEL[fin.rpe]:"") : "Concluir treino")+'</button>');
   fb.addEventListener("click", function(){
-    if(S.sess[nk]) delete S.sess[nk];
-    else { S.sess[nk] = { data: hoje(), sets: doneSets(w,d), tot: totalSets(w,d) }; beep(2); }
-    save(); renderHead(); renderView();
+    if(S.sess[nk]){ delete S.sess[nk]; save(); renderHead(); renderView(); }
+    else { rPend = nk; rsheet.classList.add("open"); }
   });
   viewEl.appendChild(fb);
 
@@ -1096,21 +1415,211 @@ function renderView(){
   }
 }
 
-/* valor da semana anterior, para comparação */
-function prevWeek(d, bid, ii, w, nome){
+/* Última vez que você fez este exercício: procura a semana mais recente
+   antes desta que tenha registro, e devolve série por série (posição
+   preservada) para virar o "fantasma" dentro de cada campo. */
+function prevSets(d, bid, ii, w, nome){
+  var b = PLAN[d].blocos.filter(function(x){ return x.id===bid; })[0];
+  if(!b) return null;
   for(var pw = w-1; pw >= 1; pw--){
-    var b = PLAN[d].blocos.filter(function(x){ return x.id===bid; })[0];
-    if(!b) return "";
     var cfg = bs(b, pw);
     if(!cfg.it[ii] || cfg.it[ii].n !== nome) continue;
-    var vals=[];
+    var vals=[], any=false;
     for(var i=0;i<cfg.s;i++){
-      var v = S.logs[kLog(pw,d,bid,ii,i)];
-      if(v) vals.push(v);
+      var v = S.logs[kLog(pw,d,bid,ii,i)] || "";
+      vals.push(v); if(v) any=true;
     }
-    if(vals.length) return "S"+pw+": "+vals.join(" · ");
+    if(any) return { w:pw, vals:vals };
   }
-  return "";
+  return null;
+}
+
+/* ============================================================
+   Render — simulado do TAF
+   ============================================================ */
+function tafInit(){
+  if(!S.taf || typeof S.taf!=="object") S.taf = { metas:{}, tests:[] };
+  if(!S.taf.metas || typeof S.taf.metas!=="object") S.taf.metas = {};
+  if(!Array.isArray(S.taf.tests)) S.taf.tests = [];
+  if(!S.ini || typeof S.ini!=="object") S.ini = {};   /* backup antigo não tem */
+}
+function testesDe(id){
+  return S.taf.tests.filter(function(t){ return t.p===id; })
+                    .sort(function(a,b){ return a.ts-b.ts; });
+}
+function metaDe(id){
+  var m = parseFloat(String(S.taf.metas[id]==null?"":S.taf.metas[id]).replace(",","."));
+  return isFinite(m) ? m : null;
+}
+/* true = na meta, false = ainda não, null = sem meta definida */
+function passou(p, v){
+  if(p.bool) return v>=1;
+  var m = metaDe(p.id);
+  if(m===null) return null;
+  return p.dir===1 ? v>=m : v<=m;
+}
+function faltaTxt(p, v){
+  var m = metaDe(p.id);
+  if(m===null) return "";
+  if(p.dir===1){
+    var d = Math.round((m-v)*100)/100;
+    var un = p.u==="m" ? " m" : (d===1?" rep":" reps");
+    return (d===1?"Falta ":"Faltam ")+fmtNum(d)+un;
+  }
+  return "Tirar "+fmtNum(v-m)+" s";
+}
+function addTeste(p, v){
+  tafInit();
+  var ts = testesDe(p.id);
+  var antes = ts.length ? passou(p, ts[ts.length-1].v) : null;
+  S.taf.tests.push({ p:p.id, v:v, d:dataBr(), ts:Date.now() });
+  save();
+  if(passou(p,v)===true && antes!==true) beep(2);
+  renderSim();
+}
+
+function renderSim(){
+  tafInit();
+  viewEl.innerHTML = "";
+
+  /* contagem regressiva para o dia da prova */
+  var dias = diasProva(), cdHtml;
+  if(dias===null){
+    cdHtml = '<section class="cd"><div style="flex:1"><div class="cl">Dia da prova</div>'+
+      '<div class="cp">Coloque a data do TAF para o app contar quanto falta.</div></div>'+
+      '<button class="mini" data-act="prova">Definir</button></section>';
+  } else {
+    var lbl = dias>1 ? "dias para a prova" : dias===1 ? "dia para a prova"
+            : dias===0 ? "a prova é hoje" : (dias===-1?"dia desde a prova":"dias desde a prova");
+    cdHtml = '<section class="cd'+(dias>=0&&dias<=30?" hot":"")+'">'+
+      '<div class="big">'+Math.abs(dias)+'</div>'+
+      '<div style="flex:1"><div class="cl">'+lbl+'</div>'+
+      '<div class="cp">'+esc(dataProvaBr())+'</div></div>'+
+      '<button class="mini" data-act="prova">Mudar</button></section>';
+  }
+  var cd = el(cdHtml);
+  cd.querySelector('[data-act="prova"]').addEventListener("click", function(){
+    sheet.classList.add("open");
+    setTimeout(function(){ var i=document.getElementById("inProva"); if(i) i.focus(); }, 150);
+  });
+  viewEl.appendChild(cd);
+
+  /* placar geral: só conta prova que tem meta e resultado */
+  var comMeta=0, batidas=0, faltando=[];
+  PROVAS.forEach(function(p){
+    var ts = testesDe(p.id);
+    if(!ts.length) return;
+    var ok = passou(p, ts[ts.length-1].v);
+    if(ok===null) return;
+    comMeta++;
+    if(ok) batidas++; else faltando.push(p.n);
+  });
+  if(comMeta){
+    viewEl.appendChild(el('<div class="hcard" style="margin-top:10px">'+
+      '<div class="hrow"><div class="nm">'+batidas+' de '+comMeta+' prova'+(comMeta>1?"s":"")+' na meta</div></div>'+
+      '<div style="margin-top:5px;color:var(--ink-2);font-size:13px">'+
+      (faltando.length ? "Ainda abaixo da meta em: "+esc(faltando.join(", "))+
+                         ". Reprovar em uma prova elimina — é aí que vale insistir."
+                       : "Tudo que você registrou está na meta. Falta manter até o dia da prova.")+
+      '</div></div>'));
+  }
+
+  viewEl.appendChild(el('<div class="sec">Provas do TAF</div>'));
+
+  PROVAS.forEach(function(p){
+    var ts = testesDe(p.id);
+    var last = ts.length ? ts[ts.length-1] : null;
+    var ok = last ? passou(p, last.v) : null;
+    var card = el('<section class="prova'+(ok===true?" ok":"")+'"></section>');
+
+    var verd = '<span class="verd">Sem registro</span>';
+    if(last && ok===true) verd = '<span class="verd ok">Na meta</span>';
+    else if(last && ok===false) verd = '<span class="verd no">'+esc(p.bool?"Falta subir":faltaTxt(p,last.v))+'</span>';
+    else if(last) verd = '<span class="verd">Sem meta</span>';
+
+    card.appendChild(el('<div class="ph"><div class="pn"><h4>'+esc(p.n)+'</h4>'+
+      '<div class="ps">'+esc(p.s)+'</div></div>'+verd+'</div>'));
+
+    if(last){
+      card.appendChild(el('<div class="now"><b>'+
+        esc(p.bool ? (last.v?"Subiu":"Não subiu") : fmtNum(last.v))+'</b>'+
+        '<span>'+(p.u&&!p.bool?esc(p.u)+' · ':'')+'último em '+esc(last.d)+'</span></div>'));
+
+      if(ts.length>1 && !p.bool){
+        var first = ts[0], dif = last.v - first.v;
+        if(dif!==0 && first.v){
+          var melhor = p.dir===1 ? dif>0 : dif<0;
+          var pctv = Math.round(Math.abs(dif)/Math.abs(first.v)*100);
+          card.appendChild(el('<div class="ev'+(melhor?"":" down")+'">'+
+            esc("1º simulado: "+fmtNum(first.v)+" → agora: "+fmtNum(last.v)+
+                " · "+(melhor?"melhorou ":"caiu ")+pctv+"%")+'</div>'));
+        }
+      }
+    }
+
+    /* registrar um novo resultado */
+    var rowin;
+    if(p.bool){
+      rowin = el('<div class="rowin">'+
+        '<button class="gh" data-v="1">Subiu ✓</button>'+
+        '<button class="gh" data-v="0">Não subiu</button></div>');
+      rowin.querySelectorAll("button").forEach(function(b){
+        b.addEventListener("click", function(){ addTeste(p, b.dataset.v==="1"?1:0); });
+      });
+    } else {
+      rowin = el('<div class="rowin">'+
+        (p.timer?'<button class="gh" data-t="1">⏱ '+fmt(p.timer)+'</button>':'')+
+        '<input inputmode="'+(p.dec?"decimal":"numeric")+'" placeholder="'+esc(p.ph)+'">'+
+        '<button data-add="1">Registrar</button></div>');
+      var inp = rowin.querySelector("input");
+      rowin.querySelector('[data-add]').addEventListener("click", function(){
+        var v = parseFloat(String(inp.value).trim().replace(",","."));
+        if(!isFinite(v)){ alert("Digite o resultado em números — por exemplo, quantos "+p.ph+" você fez."); return; }
+        inp.value = ""; addTeste(p, v);
+      });
+      var tb = rowin.querySelector('[data-t]');
+      if(tb) tb.addEventListener("click", function(){ startRest(p.timer, "Simulado · "+p.n); });
+    }
+    card.appendChild(rowin);
+
+    /* meta do edital */
+    if(!p.bool){
+      var mr = el('<div class="meta2"><label for="m-'+p.id+'">Meta do edital</label>'+
+        '<input id="m-'+p.id+'" inputmode="'+(p.dec?"decimal":"numeric")+'" placeholder="—" '+
+        'value="'+esc(S.taf.metas[p.id]||"")+'">'+
+        '<span class="un">'+esc(p.u)+'</span></div>');
+      var mi = mr.querySelector("input");
+      mi.addEventListener("input", function(){
+        var v = mi.value.trim();
+        if(v) S.taf.metas[p.id]=v; else delete S.taf.metas[p.id];
+        save();
+      });
+      mi.addEventListener("change", function(){ renderSim(); });
+      card.appendChild(mr);
+    }
+
+    /* histórico de simulados desta prova */
+    if(ts.length){
+      var h = el('<div class="hist"></div>');
+      ts.slice().reverse().slice(0,8).forEach(function(t){
+        var row = el('<div class="hl"><span>'+esc(t.d)+'</span>'+
+          '<span>'+esc(p.bool ? (t.v?"Subiu":"Não subiu") : fmtNum(t.v)+(p.u?" "+p.u:""))+
+          ' <button class="del" type="button" aria-label="Apagar este registro">×</button></span></div>');
+        row.querySelector(".del").addEventListener("click", function(){
+          S.taf.tests = S.taf.tests.filter(function(x){ return x.ts!==t.ts; });
+          save(); renderSim();
+        });
+        h.appendChild(row);
+      });
+      card.appendChild(h);
+    }
+
+    viewEl.appendChild(card);
+  });
+
+  viewEl.appendChild(el('<p class="hint" style="margin-top:16px">Os índices mínimos mudam por idade e sexo. '+
+    'Pegue os seus no edital da PCPR e digite em “Meta do edital” — o app compara o seu resultado com o número '+
+    'que você colocar, e não inventa índice de prova nenhum.</p>'));
 }
 
 /* ============================================================
@@ -1141,7 +1650,8 @@ function renderHist(){
       any=true;
       list.appendChild(el('<div class="hcard"><div class="hrow">'+
         '<div><div class="nm">'+esc(PLAN[d].nome)+'</div>'+
-        '<div class="dt" style="margin-top:2px">Semana '+w+' · '+r.sets+'/'+r.tot+' séries</div></div>'+
+        '<div class="dt" style="margin-top:2px">Semana '+w+' · '+r.sets+'/'+r.tot+' séries'+
+        (r.dur?' · '+fmtLongo(r.dur):'')+(r.rpe?' · '+esc(RPEL[r.rpe]):'')+'</div></div>'+
         '<div class="dt">'+esc(r.data)+'</div></div></div>'));
     }
   }
@@ -1224,13 +1734,39 @@ function renderHist(){
 /* ============================================================
    Abas, ajustes, backup
    ============================================================ */
-var tabT = document.getElementById("tabTreino"), tabH = document.getElementById("tabHist");
+var tabT = document.getElementById("tabTreino"),
+    tabS = document.getElementById("tabSim"),
+    tabH = document.getElementById("tabHist");
 function renderTabs(){
   tabT.setAttribute("aria-pressed", S.tab==="treino");
+  tabS.setAttribute("aria-pressed", S.tab==="sim");
   tabH.setAttribute("aria-pressed", S.tab==="hist");
 }
 tabT.addEventListener("click", function(){ S.tab="treino"; renderTabs(); renderView(); window.scrollTo(0,0); });
+tabS.addEventListener("click", function(){ S.tab="sim"; renderTabs(); renderView(); window.scrollTo(0,0); });
 tabH.addEventListener("click", function(){ S.tab="hist"; renderTabs(); renderView(); window.scrollTo(0,0); });
+
+/* ---------- esforço da sessão (pergunta ao concluir) ---------- */
+var rsheet = document.getElementById("rsheet");
+var rPend = null;
+function concluirSessao(rpe){
+  if(!rPend) return;
+  var nk = rPend; rPend = null;
+  S.sess[nk] = { data: hoje(), sets: doneSets(S.week,S.day), tot: totalSets(S.week,S.day) };
+  if(rpe) S.sess[nk].rpe = rpe;
+  if(S.ini[nk]) S.sess[nk].dur = Math.round((Date.now()-S.ini[nk])/1000);  /* congela o total */
+  beep(2); save();
+  rsheet.classList.remove("open");
+  renderHead(); renderView();
+}
+document.getElementById("rpeBtns").addEventListener("click", function(e){
+  var b = e.target.closest("button");
+  if(b) concluirSessao(+b.dataset.r);
+});
+document.getElementById("rSkip").addEventListener("click", function(){ concluirSessao(null); });
+rsheet.addEventListener("click", function(e){
+  if(e.target===rsheet){ rPend=null; rsheet.classList.remove("open"); }
+});
 
 /* ============================================================
    Instalar na tela inicial
@@ -1390,7 +1926,10 @@ document.getElementById("vClose").addEventListener("click", closeVSheet);
 vsheet.addEventListener("click", function(e){ if(e.target===vsheet) closeVSheet(); });
 
 var sheet = document.getElementById("sheet");
-document.getElementById("btnCfg").addEventListener("click", function(){ sheet.classList.add("open"); });
+document.getElementById("btnCfg").addEventListener("click", function(){
+  sheet.classList.add("open");
+  mostraVersao();
+});
 document.getElementById("btnClose").addEventListener("click", function(){ sheet.classList.remove("open"); });
 sheet.addEventListener("click", function(e){ if(e.target===sheet) sheet.classList.remove("open"); });
 document.getElementById("btnStop").addEventListener("click", function(){ startUp(null,"Cronômetro"); });
@@ -1427,9 +1966,42 @@ document.getElementById("segTema").addEventListener("click", function(e){
 mqDark.addEventListener("change", applyTheme);
 applyTheme();
 
+/* ---------- data da prova ---------- */
+var inProva = document.getElementById("inProva");
+inProva.addEventListener("change", function(){
+  var v = inProva.value;
+  if(v) S.cfg.prova = v; else delete S.cfg.prova;
+  save(); renderHead(); renderView();
+});
+
 bindSwitch("swWake","wake",applyWake);
 bindSwitch("swSound","som",function(){ if(S.cfg.som) beep(1); });
 bindSwitch("swAuto","auto");
+
+/* ---------- tipo de som ---------- */
+document.getElementById("segSom").addEventListener("click", function(e){
+  var b = e.target.closest("button");
+  if(!b) return;
+  S.cfg.somTipo = b.dataset.s;
+  save(); marcaSom();
+  if(S.cfg.som) beep(3); /* toca o aviso inteiro para você comparar */
+});
+function marcaSom(){
+  var t = SONS.indexOf(S.cfg.somTipo)<0 ? SONS[0] : S.cfg.somTipo;
+  document.getElementById("segSom").querySelectorAll("button").forEach(function(b){
+    b.classList.toggle("on", b.dataset.s===t);
+  });
+}
+
+/* Os controles são criados antes de os dados serem lidos do aparelho:
+   depois do load() é preciso reacertar o que eles mostram. */
+function syncCfgUI(){
+  [["swWake","wake"],["swSound","som"],["swAuto","auto"]].forEach(function(p){
+    document.getElementById(p[0]).setAttribute("aria-pressed", !!S.cfg[p[1]]);
+  });
+  inProva.value = S.cfg.prova || "";
+  marcaSom();
+}
 
 function exportar(){
   var data = JSON.stringify(snapshot());
@@ -1466,7 +2038,9 @@ document.getElementById("btnImport").addEventListener("click", function(){
         var o = JSON.parse(fr.result);
         FIELDS.forEach(function(k){ if(o[k]!=null) S[k]=o[k]; });
         if(o.cfg) for(var c in o.cfg) S.cfg[c]=o.cfg[c];
-        save(); sheet.classList.remove("open"); renderHead(); renderView();
+        tafInit();
+        save(); sheet.classList.remove("open");
+        applyTheme(); syncCfgUI(); renderHead(); renderView();
       }catch(e){ alert("Não consegui ler esse arquivo. Escolha o taf-backup.json exportado pelo app."); }
     };
     fr.readAsText(f);
@@ -1484,13 +2058,91 @@ document.getElementById("btnResetSession").addEventListener("click", function(){
     }
   });
   delete S.sess[kSess(w,d)];
+  delete S.ini[kSess(w,d)];
   save(); sheet.classList.remove("open"); renderHead(); renderView();
 });
 document.getElementById("btnResetAll").addEventListener("click", function(){
-  if(!confirm("Apagar todos os treinos, registros e anotações deste aparelho? Isso não tem volta.")) return;
-  S.done={}; S.logs={}; S.notas={}; S.sess={};
+  if(!confirm("Apagar todos os treinos, registros, anotações e simulados deste aparelho? Isso não tem volta.")) return;
+  S.done={}; S.logs={}; S.notas={}; S.sess={}; S.ini={}; S.taf={ metas:{}, tests:[] };
   save(); sheet.classList.remove("open"); renderHead(); renderView();
 });
+
+/* ============================================================
+   Atualização do app
+   Um app instalado na tela inicial não se atualiza como um site: ele
+   pode ficar semanas com a versão velha guardada. Aqui o app procura
+   versão nova toda vez que volta para a frente, e quando acha avisa
+   com uma faixa em vez de trocar tudo por baixo dos pés.
+   ============================================================ */
+var upd = document.getElementById("upd");
+var swReg = null;
+var jaControlado = false;
+var recarregando = false;
+
+function mostraAtualizacao(){ upd.classList.add("open"); }
+document.getElementById("updGo").addEventListener("click", function(){
+  if(recarregando) return;
+  recarregando = true;
+  location.reload();
+});
+document.getElementById("updX").addEventListener("click", function(){
+  upd.classList.remove("open");
+});
+
+/* Pergunta a versão para o service worker que está no comando. Espera o
+   `ready` porque logo depois de registrar ainda não há ninguém no comando
+   — perguntar cedo demais volta vazio. */
+function versaoSW(){
+  return new Promise(function(ok){
+    if(!("serviceWorker" in navigator)) return ok(null);
+    setTimeout(function(){ ok(null); }, 2500);   /* promessa ignora resposta atrasada */
+    navigator.serviceWorker.ready.then(function(){
+      var sw = navigator.serviceWorker.controller;
+      if(!sw) return ok(null);
+      var canal = new MessageChannel();
+      canal.port1.onmessage = function(e){ ok(e.data && e.data.versao || null); };
+      sw.postMessage({ q:"versao" }, [canal.port2]);
+    }).catch(function(){ ok(null); });
+  });
+}
+function mostraVersao(){
+  var alvo = document.getElementById("verInfo");
+  versaoSW().then(function(v){
+    alvo.textContent = v ? "Instalada: "+v : "Guardada só depois da primeira visita";
+  });
+}
+document.getElementById("btnVer").addEventListener("click", function(){
+  var alvo = document.getElementById("verInfo");
+  if(!swReg){ alvo.textContent = "Este navegador não guarda o app"; return; }
+  alvo.textContent = "Procurando…";
+  swReg.update().then(function(){
+    if(swReg.installing || swReg.waiting){ alvo.textContent = "Baixando a versão nova…"; return; }
+    versaoSW().then(function(v){
+      alvo.textContent = "Você já está na mais nova" + (v ? " ("+v+")" : "");
+    });
+  }).catch(function(){
+    alvo.textContent = "Não deu para verificar — sem internet?";
+  });
+});
+
+if("serviceWorker" in navigator){
+  /* guardado antes de registrar: se já havia um no comando, o que vier
+     depois é atualização; se não havia, é a primeira instalação */
+  jaControlado = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener("controllerchange", function(){
+    if(jaControlado) mostraAtualizacao();
+    /* a primeira troca é a instalação inicial tomando conta, e não conta
+       como novidade; da segunda em diante é atualização de verdade */
+    else jaControlado = true;
+  });
+  window.addEventListener("load", function(){
+    navigator.serviceWorker.register("sw.js").then(function(r){
+      swReg = r;
+      mostraVersao();
+      if(r.waiting && jaControlado) mostraAtualizacao();
+    }).catch(function(){ /* sem offline, o app segue normal */ });
+  });
+}
 
 /* ============================================================
    Início
@@ -1498,19 +2150,13 @@ document.getElementById("btnResetAll").addEventListener("click", function(){
 load();
 if(S.week<1||S.week>4) S.week=1;
 if(S.day<0||S.day>=PLAN.length) S.day=0;
-applyTheme();
+if(["treino","sim","hist"].indexOf(S.tab)<0) S.tab="treino";
+tafInit();
+applyTheme(); syncCfgUI();
 renderHead(); renderTabs(); renderView(); applyWake();
 
 })();
 </script>
 
-<script>
-/* Guarda o app no aparelho para funcionar sem internet. */
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", function () {
-    navigator.serviceWorker.register("sw.js").catch(function () { /* sem offline, app segue normal */ });
-  });
-}
-</script>
 </body>
 </html>

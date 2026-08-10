@@ -35,6 +35,7 @@ reiniciar o ciclo. Semanas 5 em diante só entram quando o professor passar.
 | `manifest.webmanifest` | Nome, cores e ícones da instalação |
 | `sw.js` | Service worker — funcionamento offline |
 | `icons/` | Ícones PNG, gerados por `tools/gerar-icones.py` |
+| `sons/` | Avisos sonoros em MP3 + `CREDITOS.txt` com autoria e licença |
 | `tools/gerar-icones.py` | Regera os ícones a partir das cores do app |
 | `tools/build-artifact.py` | Gera a versão para publicar como Artifact do Claude |
 
@@ -98,6 +99,22 @@ internet; o restante do app segue funcionando offline. Exercícios sem entrada
 nos mapas não ganham ícone (corrida, sprint e bike ficaram de fora de
 propósito).
 
+### Simulado do TAF — `PROVAS` e `S.taf`
+
+Aba própria (`S.tab === "sim"`, render em `renderSim()`). `PROVAS` lista as
+cinco provas com `dir` (1 = quanto maior melhor; -1 = quanto menor melhor,
+caso do shuttle run), `bool` para a corda (subiu / não subiu) e `timer`
+opcional que abre o cronômetro já no tempo da prova (1:00 no abdominal,
+12:00 na corrida).
+
+**As metas são digitadas pelo usuário, nunca embutidas no código.** Os
+índices mínimos mudam por idade e sexo e saem do edital da PCPR — o app só
+compara o resultado com o número que ele colocou em "Meta do edital". Não
+invente esses valores, nem como sugestão.
+
+`S.taf = { metas:{idProva: "valor"}, tests:[{p, v, d, ts}] }`. O veredito
+sai de `passou()`, que devolve `null` quando não há meta.
+
 ### Estado — `S` e `localStorage`
 
 Chave `taf-pcpr-v1`. Campos persistidos listados em `FIELDS`; `snapshot()` monta
@@ -106,10 +123,18 @@ o objeto exportado. Formato das chaves:
 ```
 done  →  "w{semana}|{idSessao}|{idBloco}|{indiceSerie}"
 logs  →  "w{semana}|{idSessao}|{idBloco}|{indiceExercicio}|{indiceSerie}"
-sess  →  "w{semana}|{idSessao}"     (sessão concluída: data e contagem)
+sess  →  "w{semana}|{idSessao}"     (concluída: data, contagem, dur, rpe)
 notas →  "w{semana}|{idSessao}"
+ini   →  "w{semana}|{idSessao}"     (Date.now da 1ª série — tempo do treino)
 vid   →  "{nome do exercício}"
+taf   →  { metas, tests }           (simulados; não é por semana)
 ```
+
+Em `cfg`: `prova` (data do TAF, "AAAA-MM-DD", liga a contagem regressiva) e
+`somTipo` (qual arquivo de `sons/` toca).
+
+Ao acrescentar campo novo, lembre que backup antigo não o tem — `tafInit()`
+existe para preencher o que falta na importação.
 
 Tudo fica no aparelho. **Não há sincronização entre celulares** — é o preço de
 funcionar offline sem servidor. A saída é ⚙ Ajustes → Exportar/Importar backup.
@@ -119,11 +144,38 @@ obrigatório migrar os dados antigos ou trocar a versão da chave e converter.
 
 ## Decisões que não devem ser desfeitas
 
+**Aviso sonoro é gravação, não síntese.** A primeira versão gerava os bipes
+com osciladores (onda quadrada, depois senoide com harmônico). O usuário
+rejeitou as duas: "toque monofônico é muito feio". Hoje cada opção é um MP3
+curto em `sons/`, tocado por Web Audio a partir de um `AudioBuffer` — o
+mesmo arquivo serve para tudo: inteiro no fim do descanso, os primeiros
+0,55 s como confirmação, os primeiros 0,13 s na contagem 3-2-1. A síntese
+sobrou só como reserva se o arquivo não carregar.
+
+Ao trocar um som, **confira onde o som começa de fato** (envelope de
+energia, não confie no nome do arquivo). O despertador original tem 2
+segundos de tique-taque antes da campainha, e o primeiro recorte pegou
+justamente o silêncio. Como a contagem 3-2-1 toca só os 130 ms iniciais, um
+arquivo que começa devagar sai mudo. Iguale também o volume **médio**
+(≈ −16 dBFS) e não o de pico, senão uma opção parece muito mais baixa que
+as outras. Os arquivos ficam em `ARQUIVOS` no `sw.js` para tocarem offline.
+
+**Atualização avisa em vez de trocar em silêncio.** App instalado na tela
+inicial pode ficar semanas com a versão velha. O app chama `reg.update()`
+toda vez que volta para a frente (`visibilitychange`) e, quando o service
+worker novo assume, mostra a faixa `#upd`. Cuidado com a lógica de
+`jaControlado`: a **primeira** troca de controlador é a instalação inicial e
+não deve virar aviso, mas a partir dela toda troca é atualização de verdade
+— um bug real morava aí. Ajustes mostra a versão instalada perguntando ao
+service worker por `postMessage`.
+
 **Cronômetro usa `Date.now()`, não `requestAnimationFrame`.** A primeira versão
 acumulava deltas de rAF e o timer congelava quando a tela apagava ou o usuário
 trocava de app — inaceitável para descanso de treino. Hoje `T.anchor` guarda o
 instante alvo e o tempo é sempre derivado do relógio; `setInterval` só redesenha.
-Voltar para rAF reintroduz o bug.
+Voltar para rAF reintroduz o bug. **O tempo total do treino segue a mesma
+regra**: `S.ini` guarda o instante da primeira série e o total é sempre
+`agora − início`, então fechar o app no meio não atrapalha.
 
 **Ícone ▶ abre o painel com player embutido** (decisão revista em 10/08/2026 a
 pedido do usuário — antes era só busca em outra aba). O embed é um iframe do

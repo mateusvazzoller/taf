@@ -3,7 +3,7 @@
    a versão nova quando há sinal — assim uma atualização não fica presa.
    Ao publicar uma alteração, troque o número da versão abaixo. */
 
-const VERSAO = "taf-v4";
+const VERSAO = "taf-v5";
 const ARQUIVOS = [
   "./",
   "./index.html",
@@ -11,7 +11,10 @@ const ARQUIVOS = [
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/icon-maskable-512.png",
-  "./icons/apple-touch-icon.png"
+  "./icons/apple-touch-icon.png",
+  "./sons/despertador.mp3",
+  "./sons/apito.mp3",
+  "./sons/gongo.mp3"
 ];
 
 self.addEventListener("install", (e) => {
@@ -28,6 +31,14 @@ self.addEventListener("activate", (e) => {
       .then((ks) => Promise.all(ks.filter((k) => k !== VERSAO).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
   );
+});
+
+/* A página pergunta qual versão está no comando, para mostrar em Ajustes. */
+self.addEventListener("message", (e) => {
+  const d = e.data || {};
+  if (d.q === "versao" && e.ports && e.ports[0]) {
+    e.ports[0].postMessage({ versao: VERSAO });
+  }
 });
 
 self.addEventListener("fetch", (e) => {
