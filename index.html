@@ -330,6 +330,11 @@
         transition:transform .16s,background .16s}
   .sw[aria-pressed="true"]{background:var(--accent)}
   .sw[aria-pressed="true"] i{transform:translateX(21px);background:var(--accent-ink)}
+  .seg{flex:0 0 auto;display:flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;
+       background:var(--surface-2)}
+  .seg button{padding:8px 11px;font-size:12.5px;color:var(--ink-2);border-left:1px solid var(--line)}
+  .seg button:first-child{border-left:none}
+  .seg button.on{background:var(--accent);color:var(--accent-ink);font-weight:700}
   .btnrow{display:grid;gap:8px;margin-top:16px}
   .btnrow button{height:46px;border:1px solid var(--line);border-radius:9px;background:var(--surface-2);
                  font-family:var(--f-display);font-size:15px;letter-spacing:.07em;text-transform:uppercase;
@@ -406,6 +411,14 @@
 <div class="sheet" id="sheet">
   <div class="panel">
     <h3>Ajustes e dados</h3>
+    <div class="opt">
+      <div><div class="ot">Tema</div><div class="od">Automático segue o modo do celular</div></div>
+      <div class="seg" id="segTema" role="group" aria-label="Tema do app">
+        <button data-t="auto">Auto</button>
+        <button data-t="light">Claro</button>
+        <button data-t="dark">Escuro</button>
+      </div>
+    </div>
     <div class="opt">
       <div><div class="ot">Manter a tela ligada</div><div class="od">Impede o celular de apagar durante o treino</div></div>
       <button class="sw" id="swWake" aria-pressed="false"><i></i></button>
@@ -642,7 +655,7 @@ var REG = {
 var KEY = "taf-pcpr-v1";
 var FIELDS = ["week","day","done","logs","notas","sess","vid"];
 var S = { week:1, day:0, tab:"treino", done:{}, logs:{}, notas:{}, sess:{}, vid:{},
-          cfg:{ wake:false, som:true, auto:true } };
+          cfg:{ wake:false, som:true, auto:true, tema:"auto" } };
 
 function load(){
   try{
@@ -1391,6 +1404,29 @@ function bindSwitch(id, key, after){
     save(); if(after) after();
   });
 }
+/* ---------- tema (modo noturno) ---------- */
+var mqDark = window.matchMedia("(prefers-color-scheme: dark)");
+function applyTheme(){
+  var t = S.cfg.tema || "auto";
+  if(t === "auto") delete document.documentElement.dataset.theme;
+  else document.documentElement.dataset.theme = t;
+  var escuro = t === "dark" || (t === "auto" && mqDark.matches);
+  document.querySelector('meta[name="theme-color"]')
+          .setAttribute("content", escuro ? "#12151A" : "#E9ECEF");
+  var seg = document.getElementById("segTema");
+  if(seg) seg.querySelectorAll("button").forEach(function(b){
+    b.classList.toggle("on", b.dataset.t === t);
+  });
+}
+document.getElementById("segTema").addEventListener("click", function(e){
+  var b = e.target.closest("button");
+  if(!b) return;
+  S.cfg.tema = b.dataset.t;
+  save(); applyTheme();
+});
+mqDark.addEventListener("change", applyTheme);
+applyTheme();
+
 bindSwitch("swWake","wake",applyWake);
 bindSwitch("swSound","som",function(){ if(S.cfg.som) beep(1); });
 bindSwitch("swAuto","auto");
@@ -1462,6 +1498,7 @@ document.getElementById("btnResetAll").addEventListener("click", function(){
 load();
 if(S.week<1||S.week>4) S.week=1;
 if(S.day<0||S.day>=PLAN.length) S.day=0;
+applyTheme();
 renderHead(); renderTabs(); renderView(); applyWake();
 
 })();

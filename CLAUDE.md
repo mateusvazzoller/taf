@@ -141,7 +141,10 @@ também se está dentro de um iframe/webview e avisa para abrir no navegador, qu
 é redefinido em `@media (prefers-color-scheme)` e nos seletores
 `:root[data-theme]`. Nunca estilizar componente dentro do media query — já deu
 colisão de especificidade uma vez (estado de série concluída), resolvida com o
-token `--on-good`.
+token `--on-good`. Desde 10/08/2026 há um seletor manual em Ajustes
+(Auto/Claro/Escuro, `S.cfg.tema`, aplicado por `applyTheme()` via
+`data-theme` no `<html>`); "Auto" segue o sistema e também atualiza o
+`<meta name="theme-color">`.
 
 ## Publicar uma alteração
 
