@@ -79,13 +79,24 @@ Tipos de campo que o usuário preenche: `kg`, `reps`, `seg`, `tempo` (mm:ss),
 `m`. Os de tempo (`seg`, `tempo`) ganham botão de cronômetro que preenche o
 campo sozinho ao salvar.
 
-### Vídeos — `VID`
+### Vídeos — `VID` e `VIDEO`
 
-Mapa `nome do exercício → termos de busca`. O ícone ▶ abre a busca no YouTube.
-**Nunca colocar URL fixa de vídeo aqui** — link inventado dá vídeo errado ou
-morto. O usuário pode salvar o link do professor, que fica em `S.vid` e passa a
-ter prioridade sobre a busca. Exercícios sem entrada no mapa não ganham ícone
-(corrida, sprint e bike ficaram de fora de propósito).
+`VID` é o mapa `nome do exercício → termos de busca` (fallback). `VIDEO` é o
+mapa curado `nome do exercício → {id, t, c, d}` (id do YouTube, título, canal,
+duração) que alimenta o player embutido no painel ▶. Prioridade ao abrir:
+
+1. Link salvo pelo usuário (`S.vid`) — se for do YouTube, também toca embutido.
+2. Vídeo curado de `VIDEO` — player embutido + crédito do canal + link externo.
+3. Busca no YouTube com os termos de `VID`, em outra aba.
+
+**Não inventar IDs.** Todos os IDs de `VIDEO` foram encontrados por busca real
+e verificados um a um via oEmbed (que também acusa vídeo com incorporação
+desativada) em 10/08/2026. Ao trocar um vídeo, verifique o novo do mesmo jeito.
+O iframe (`youtube-nocookie.com`) é criado só quando o painel abre e é removido
+ao fechar — o áudio para e nada fica carregado por trás. O player precisa de
+internet; o restante do app segue funcionando offline. Exercícios sem entrada
+nos mapas não ganham ícone (corrida, sprint e bike ficaram de fora de
+propósito).
 
 ### Estado — `S` e `localStorage`
 
@@ -114,8 +125,11 @@ trocava de app — inaceitável para descanso de treino. Hoje `T.anchor` guarda 
 instante alvo e o tempo é sempre derivado do relógio; `setInterval` só redesenha.
 Voltar para rAF reintroduz o bug.
 
-**Ícone ▶ não abre vídeo embutido.** Sem CDN e sem player: a busca do YouTube
-abre em outra aba.
+**Ícone ▶ abre o painel com player embutido** (decisão revista em 10/08/2026 a
+pedido do usuário — antes era só busca em outra aba). O embed é um iframe do
+YouTube criado sob demanda; não há CDN nem biblioteca de player. Em `file://`
+o embed do YouTube não funciona (erro 153) — testar sempre via servidor local
+ou no site publicado.
 
 **O botão de instalar não promete o que não pode cumprir.** No iOS a Apple não
 permite instalação programática — o botão mostra o passo a passo do Safari. No

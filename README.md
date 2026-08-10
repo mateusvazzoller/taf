@@ -9,7 +9,7 @@ Roda no navegador do celular, instala na tela inicial e funciona sem internet.
 - Marcação de séries com progresso por sessão e por semana
 - Timer de descanso automático e cronômetro para isometrias
 - Registro de cargas, tempos, repetições e distâncias, com comparação entre as semanas
-- Busca de vídeo por exercício, com espaço para salvar o link do professor
+- Vídeo demonstrativo embutido em cada exercício (precisa de internet), com espaço para salvar o link do professor — que tem prioridade
 - Exportar e importar backup dos dados
 
 ## Como funciona

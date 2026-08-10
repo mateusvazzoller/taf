@@ -197,6 +197,10 @@
          background:var(--accent);color:var(--accent-ink);font-family:var(--f-display);font-size:16px;
          letter-spacing:.07em;text-transform:uppercase;font-weight:700;text-decoration:none}
   .vlink.ghost{background:var(--surface-2);color:var(--ink);border:1px solid var(--line)}
+  .vplayer{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:9px;
+           overflow:hidden;border:1px solid var(--line);margin-bottom:12px}
+  .vplayer iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  .vcred{color:var(--ink-3);font-size:12px;margin:-6px 0 12px;line-height:1.45}
   .vfield{margin-top:16px}
   .vfield label{font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);
                 font-weight:700;display:block;margin-bottom:7px}
@@ -381,6 +385,8 @@
 <div class="sheet" id="vsheet">
   <div class="panel">
     <h3 id="vTitle">Vídeo</h3>
+    <div id="vPlayer"></div>
+    <p class="vcred" id="vCred" style="display:none"></p>
     <a class="vlink" id="vOpen" href="#" target="_blank" rel="noopener noreferrer">Abrir vídeo</a>
     <p class="vsub" id="vSub"></p>
     <div class="vfield">
@@ -584,6 +590,42 @@ var VID = {
   "Dragon flag":"dragon flag como fazer progressão",
   "Star plank":"star plank prancha lateral execução",
   "Remador — 1:00":"técnica no remador ergômetro remo indoor"
+};
+
+/* Vídeo curado por exercício: id do YouTube + título e canal (crédito).
+   IDs verificados um a um via oEmbed em 10/08/2026 — se trocar, verifique
+   de novo. O link salvo pelo usuário (S.vid) continua tendo prioridade. */
+var VIDEO = {
+  "Abdominal remador": { id:"1VnmNj1qmjU", t:"Tudo sobre o abdominal remador (TAF)", c:"Cesão BigC", d:"7:48" },
+  "Abdominal remador lento": { id:"1VnmNj1qmjU", t:"Tudo sobre o abdominal remador (TAF)", c:"Cesão BigC", d:"7:48" },
+  "Agachamento": { id:"Eo4EZK3UD98", t:"Como fazer agachamento — passo a passo", c:"Olena Starodubets", d:"7:18" },
+  "Agachamento búlgaro": { id:"luFZWNBUMRc", t:"Como fazer agachamento búlgaro corretamente (guia completo)", c:"André Albuquerque", d:"10:01" },
+  "Barra fixa — máximo": { id:"lARgL_Sh-p0", t:"Barra fixa excêntrica/negativa", c:"BR Especialista em TAF", d:"6:48" },
+  "Barra fixa — máximo de repetições": { id:"a4oaWp5aHLo", t:"Checklist da barra fixa perfeita", c:"Cesão BigC", d:"10:10" },
+  "Burpee com salto": { id:"OG25R5lnkXE", t:"Burpee sem sofrer", c:"RX54", d:"7:39" },
+  "Desenvolvimento (press)": { id:"L-iQfHVeuVg", t:"Desenvolvimento de ombros com halteres", c:"MyTrainingPRO", d:"1:01" },
+  "Dragon flag": { id:"aEgnTxbjSag", t:"Dragon flag — tutorial completo", c:"Hangar 42 Calistenia", d:"9:46" },
+  "Elevação frontal": { id:"jhxLYSm_P-k", t:"Elevação frontal com halteres", c:"MyTrainingPRO", d:"0:56" },
+  "Elevação lateral": { id:"ORparUDksUk", t:"Como realizar elevação lateral com halteres", c:"FisioPrev", d:"1:22" },
+  "Farmer carry": { id:"xb1GMZacM8w", t:"Farmer walk — guia completo", c:"Bruna Nunes", d:"5:15" },
+  "Hollow hold": { id:"9ryjFfS1WDA", t:"Como fazer hollow hold (canoinha)", c:"Carlos Klein", d:"2:35" },
+  "Posterior de ombro": { id:"fpb0ir_8tP4", t:"Crucifixo inverso para posterior de ombro", c:"Treinador Buda", d:"1:06" },
+  "Prancha": { id:"qNRqGqESAWU", t:"Como fazer abdominal prancha", c:"Leandro Twin", d:"1:55" },
+  "Prancha com braços estendidos": { id:"L0L79lq7adw", t:"Prancha com braços estendidos", c:"Zé Personal Floripa", d:"1:02" },
+  "Prática de subida de corda": { id:"vPmJ_NmdX78", t:"3 etapas para a escalada na corda (rope climb)", c:"Telêmaco Martins", d:"6:43" },
+  "Pull-up escapular": { id:"2f97pFlCLQk", t:"Tactical pull-up (ativação escapular)", c:"BPro Treinamento", d:"1:55" },
+  "Puxada alta + isometria": { id:"BGDl7bDvRp8", t:"Tipos de barra na puxada e resultados nas costas", c:"Guilherme Ern", d:"5:40" },
+  "Remada na argola + isometria": { id:"HFL58XnL5s4", t:"Ring row / remada nas argolas", c:"Dicas do Salgueiro", d:"0:47" },
+  "Remada na argola com pés elevados + isometria": { id:"HFL58XnL5s4", t:"Ring row / remada nas argolas", c:"Dicas do Salgueiro", d:"0:47" },
+  "Remador — 1:00": { id:"acvBTy4sRKM", t:"Técnica correta de remo indoor", c:"Remo Fitness", d:"6:53" },
+  "Salto com halteres": { id:"XOTO2qWRy9U", t:"Agachamento com salto com halteres", c:"Bodybuilding.com", d:"1:05" },
+  "Salto na caixa": { id:"FC9803PT-o4", t:"Como aprender box jump (salto na caixa)", c:"Coach Walisson", d:"1:50" },
+  "Slam ball": { id:"caXJOY6CblQ", t:"Como usar slam ball", c:"Odin Fit", d:"1:25" },
+  "Sled push": { id:"wdb-G3DoWBU", t:"Dicas de empurrão de trenó (sled push)", c:"Hyrox Hub", d:"2:31" },
+  "Star plank": { id:"IzFzyemwOlM", t:"Prancha estrela (star plank)", c:"Matheus Navarro PSW", d:"1:44" },
+  "Tempo máximo pendurado": { id:"PlAE67ovNEo", t:"Como fazer a suspensão morta (dead hang)", c:"Gymless Fitness", d:"5:13" },
+  "Tempo máximo pendurado na barra": { id:"PlAE67ovNEo", t:"Como fazer a suspensão morta (dead hang)", c:"Gymless Fitness", d:"5:13" },
+  "Tornozelos": { id:"CREaubVbw0I", t:"5 exercícios para mobilidade de tornozelo", c:"Davi Stemler", d:"8:40" }
 };
 
 var REG = {
@@ -1265,19 +1307,58 @@ function buscaYT(nome){
   return "https://www.youtube.com/results?search_query=" +
          encodeURIComponent(VID[nome] || nome);
 }
+function ytId(u){
+  var m = String(u||"").match(/(?:youtu\.be\/|[?&]v=|\/shorts\/|\/embed\/)([\w-]{11})/);
+  return m ? m[1] : null;
+}
+function fillPlayer(id){
+  document.getElementById("vPlayer").innerHTML =
+    '<div class="vplayer"><iframe src="https://www.youtube-nocookie.com/embed/'+id+'?rel=0" '+
+    'title="Vídeo do exercício" allow="encrypted-media; picture-in-picture" allowfullscreen '+
+    'referrerpolicy="strict-origin-when-cross-origin"></iframe></div>';
+}
+function clearPlayer(){
+  document.getElementById("vPlayer").innerHTML = "";
+  document.getElementById("vCred").style.display = "none";
+}
 function openVideo(nome){
   vAtual = nome;
   document.getElementById("vTitle").textContent = nome;
   var salvo = S.vid[nome];
+  var cur = VIDEO[nome];
+  var vCred = document.getElementById("vCred");
   vUrl.value = salvo || "";
-  vOpen.href = salvo && urlOk(salvo) ? salvo : buscaYT(nome);
-  vOpen.textContent = salvo ? "Abrir seu vídeo" : "Buscar no YouTube";
+  clearPlayer();
+  if(salvo && urlOk(salvo)){
+    // link do professor manda
+    var sid = ytId(salvo);
+    if(sid) fillPlayer(sid);
+    vOpen.href = salvo;
+    vOpen.textContent = "Abrir seu vídeo";
+    document.getElementById("vSub").textContent = sid
+      ? "Vídeo salvo por você. O player precisa de internet; o restante do app funciona offline."
+      : "Abre o link que você salvou para este exercício.";
+  } else if(cur){
+    fillPlayer(cur.id);
+    vCred.textContent = "“" + cur.t + "” · " + cur.c + " · " + cur.d;
+    vCred.style.display = "";
+    vOpen.href = "https://www.youtube.com/watch?v=" + cur.id;
+    vOpen.textContent = "Abrir no YouTube";
+    document.getElementById("vSub").textContent =
+      "Demonstração sugerida. O player precisa de internet; o restante do app funciona offline. Se o professor mandar outro vídeo, salve o link abaixo que ele passa a valer.";
+  } else {
+    vOpen.href = buscaYT(nome);
+    vOpen.textContent = "Buscar no YouTube";
+    document.getElementById("vSub").textContent =
+      "Abre a busca “" + (VID[nome]||nome) + "” no YouTube, em outra aba.";
+  }
   vOpen.className = "vlink";
-  document.getElementById("vSub").textContent = salvo
-    ? "Abre o link que você salvou para este exercício."
-    : "Abre a busca “" + (VID[nome]||nome) + "” no YouTube, em outra aba.";
   document.getElementById("vClear").style.display = salvo ? "" : "none";
   vsheet.classList.add("open");
+}
+function closeVSheet(){
+  vsheet.classList.remove("open");
+  clearPlayer(); // remove o iframe para o vídeo parar de tocar
 }
 document.getElementById("vSave").addEventListener("click", function(){
   var u = vUrl.value.trim();
@@ -1287,13 +1368,13 @@ document.getElementById("vSave").addEventListener("click", function(){
     return;
   }
   else S.vid[vAtual] = u;
-  save(); vsheet.classList.remove("open"); renderView();
+  save(); closeVSheet(); renderView();
 });
 document.getElementById("vClear").addEventListener("click", function(){
-  delete S.vid[vAtual]; save(); vsheet.classList.remove("open"); renderView();
+  delete S.vid[vAtual]; save(); closeVSheet(); renderView();
 });
-document.getElementById("vClose").addEventListener("click", function(){ vsheet.classList.remove("open"); });
-vsheet.addEventListener("click", function(e){ if(e.target===vsheet) vsheet.classList.remove("open"); });
+document.getElementById("vClose").addEventListener("click", closeVSheet);
+vsheet.addEventListener("click", function(e){ if(e.target===vsheet) closeVSheet(); });
 
 var sheet = document.getElementById("sheet");
 document.getElementById("btnCfg").addEventListener("click", function(){ sheet.classList.add("open"); });
