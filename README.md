@@ -29,6 +29,8 @@ guardado no próprio aparelho (`localStorage`), então:
 | `manifest.webmanifest` | Nome, cores e ícones usados na instalação na tela inicial |
 | `sw.js` | Service worker: guarda o app no aparelho para abrir sem internet |
 | `icons/` | Ícones do atalho |
+| `tools/` | Scripts para regerar os ícones e a versão publicada como Artifact |
+| `CLAUDE.md` | Contexto do projeto: estrutura, decisões e como alterar sem quebrar |
 
 ## Publicando
 
