@@ -3,14 +3,16 @@
    a versão nova quando há sinal — assim uma atualização não fica presa.
    Ao publicar uma alteração, troque o número da versão abaixo. */
 
-const VERSAO = "taf-v5";
+const VERSAO = "taf-v6";
 const ARQUIVOS = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
+  "./icons/icon-192-maskable.png",
   "./icons/icon-maskable-512.png",
+  "./icons/icon-mono-512.png",
   "./icons/apple-touch-icon.png",
   "./sons/despertador.mp3",
   "./sons/apito.mp3",

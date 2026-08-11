@@ -3,19 +3,27 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
-<meta name="description" content="Rotina de preparacao fisica para o TAF da Policia Civil do Parana: semanas 1 a 4, com cronometro, timer de descanso e registro de cargas e marcas.">
+<meta name="description" content="Meu TAF: preparacao fisica para o TAF da Policia Civil do Parana, com cronometro, timer de descanso, registro de cargas e simulado das cinco provas.">
 <meta name="theme-color" content="#12151A">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="TAF">
+<meta name="apple-mobile-web-app-title" content="Meu TAF">
 <meta name="color-scheme" content="dark light">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png" sizes="192x192" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<script>
+/* Decide antes de desenhar se a capa entra: assim quem já usa o app não vê
+   a capa piscar, e quem abre pela primeira vez não vê o treino piscar. */
+try{
+  var _s = JSON.parse(localStorage.getItem("taf-pcpr-v1") || "{}");
+  if(_s && _s.cfg && _s.cfg.abriu) document.documentElement.className += " ja-abriu";
+}catch(e){}
+</script>
 </head>
 <body>
-<title>TAF · Treino Semanas 1–4</title>
+<title>Meu TAF · Preparação Física</title>
 
 <style>
   :root{
@@ -408,6 +416,33 @@
           border-radius:8px;padding:0 10px;font-family:var(--f-mono);font-size:13px;color:var(--ink)}
   .dateip:focus{border-color:var(--accent);outline:none}
 
+  /* ---------- capa de primeira abertura ---------- */
+  .capa{position:fixed;inset:0;z-index:120;display:flex;flex-direction:column;
+        background:var(--ground);padding:calc(26px + env(safe-area-inset-top)) 22px
+        calc(26px + env(safe-area-inset-bottom));overflow-y:auto}
+  html.ja-abriu .capa{display:none}
+  .capa::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.42;
+    background:repeating-linear-gradient(90deg,transparent 0 39px,var(--line-soft) 39px 40px)}
+  .capa::after{content:"";position:absolute;left:50%;top:-18%;width:150%;height:58%;
+    transform:translateX(-50%);pointer-events:none;
+    background:radial-gradient(ellipse at center,var(--accent-soft) 0%,transparent 68%)}
+  .capa-in{position:relative;margin:auto;width:100%;max-width:420px;text-align:center}
+  .capa-marca{width:88px;height:88px;margin:0 auto 22px;display:block}
+  .capa h1{font-family:var(--f-display);font-size:44px;letter-spacing:.045em;text-transform:uppercase;
+           margin:0;font-weight:700;line-height:.95}
+  .capa h1 span{color:var(--accent)}
+  .capa .corp{font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--ink-3);
+              font-weight:700;margin-top:9px}
+  .capa .promessa{color:var(--ink-2);font-size:14.5px;line-height:1.5;margin:20px auto 0;max-width:330px}
+  .capa .provas{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:22px 0 0}
+  .capa .provas span{font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;
+                     color:var(--ink-2);border:1px solid var(--line);border-radius:5px;padding:5px 8px}
+  .capa .go{width:100%;height:56px;margin-top:28px;border-radius:12px;background:var(--accent);
+            color:var(--accent-ink);font-family:var(--f-display);font-size:19px;letter-spacing:.07em;
+            text-transform:uppercase;font-weight:700}
+  .capa .go:active{opacity:.86}
+  .capa .rodape{color:var(--ink-3);font-size:12px;margin-top:15px;line-height:1.45}
+
   /* ---------- aviso de versão nova ---------- */
   .upd{position:fixed;left:0;right:0;top:0;z-index:95;display:none;align-items:center;gap:9px;
        padding:calc(11px + env(safe-area-inset-top)) 14px 11px;background:var(--accent);
@@ -435,6 +470,26 @@
   @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 </style>
 
+<div class="capa" id="capa">
+  <div class="capa-in">
+    <svg class="capa-marca" viewBox="0 0 96 96" role="img" aria-label="Meu TAF">
+      <rect width="96" height="96" rx="21" fill="var(--accent)"></rect>
+      <rect x="15.2" y="20.8" width="65.6" height="10.9" rx="1.5" fill="var(--ground)"></rect>
+      <rect x="41.8" y="31.7" width="12.4" height="43.5" rx="1.7" fill="var(--ground)"></rect>
+    </svg>
+    <h1>Meu TAF<span>.</span></h1>
+    <div class="corp">Polícia Civil do Paraná</div>
+    <p class="promessa">O treino do seu professor, o cronômetro e as cinco provas
+      no mesmo lugar — funcionando até sem internet.</p>
+    <div class="provas">
+      <span>Barra fixa</span><span>Abdominal</span><span>12 minutos</span>
+      <span>Shuttle run</span><span>Corda</span>
+    </div>
+    <button class="go" id="capaGo">Iniciar meu treino</button>
+    <p class="rodape">Seus registros ficam só neste aparelho.</p>
+  </div>
+</div>
+
 <div class="upd" id="upd">
   <div class="ut"><b>Nova versão do app</b><i>Toque para carregar as novidades</i></div>
   <button id="updGo">Atualizar</button>
@@ -445,7 +500,7 @@
   <header class="top">
     <div class="brand">
       <div>
-        <h1>TAF<span>.</span> Polícia Civil</h1>
+        <h1>Meu TAF<span>.</span> Polícia Civil</h1>
         <div class="sub" id="cycleLabel">Bloco base · semanas 1 a 4</div>
       </div>
       <div class="headrow">
@@ -2065,6 +2120,17 @@ document.getElementById("btnResetAll").addEventListener("click", function(){
   if(!confirm("Apagar todos os treinos, registros, anotações e simulados deste aparelho? Isso não tem volta.")) return;
   S.done={}; S.logs={}; S.notas={}; S.sess={}; S.ini={}; S.taf={ metas:{}, tests:[] };
   save(); sheet.classList.remove("open"); renderHead(); renderView();
+});
+
+/* ============================================================
+   Capa de primeira abertura
+   Só aparece uma vez. A classe que decide já foi posta no <html> antes
+   de a página desenhar, para não piscar nem de um lado nem do outro.
+   ============================================================ */
+document.getElementById("capaGo").addEventListener("click", function(){
+  S.cfg.abriu = true; save();
+  document.documentElement.className += " ja-abriu";
+  try{ ac(); }catch(e){}          /* toque do usuário: aproveita e libera o áudio */
 });
 
 /* ============================================================

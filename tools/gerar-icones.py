@@ -1,63 +1,91 @@
-"""Gera os ícones do app a partir das cores definidas no index.html.
+"""Gera os ícones do app "Meu TAF".
 
     python tools/gerar-icones.py
 
 Requer Pillow. Os arquivos vão para icons/ e devem ser commitados.
-O ícone "maskable" sangra até a borda e mantém o conteúdo na zona segura
-central, porque o Android recorta o ícone em formatos diferentes por aparelho.
+
+A marca é um **T construído**: o travessão é a barra fixa e a haste desce
+como o corpo. Uma letra só, desenhada como objeto — não é texto tipografado.
+Foi o formato escolhido depois de comparar sete conceitos no tamanho real de
+48 px, que é o que vale: símbolo com muitos elementos vira borrão ali.
+
+Medidas seguem as regras de ícone de app:
+
+  * fundo sólido laranja, marca escura — silhueta garantida em qualquer papel
+    de parede. Ícone escuro some em tela inicial preta.
+  * duas cores, sem degradê, sem sombra, sem contorno fino
+  * traço de 58 px no master de 512 (11%); o piso praticável é 32 px
+  * marca ocupando ~68% da largura na versão comum
+
+Três famílias de arquivo, e a diferença entre elas importa:
+
+  any        cantos arredondados no PNG, marca a 68%. Usado no diálogo de
+             instalação, na aba do navegador e no alternador de tarefas.
+  maskable   quadrado sangrando até a borda, sem canto arredondado, marca
+             reduzida a 58%. O Android recorta o ícone em formatos diferentes
+             por aparelho (círculo, quadrado, gota) — a zona garantida é o
+             círculo de raio 40% a partir do centro. Sem esta versão, o
+             launcher desenha o PNG dentro de uma moldura branca.
+  monochrome silhueta chapada para os "ícones temáticos" do Android 13+.
+
+O apple-touch-icon também vai sem canto arredondado: o iOS aplica a máscara
+dele por cima, e arredondar antes cria borda dupla.
 """
 
 import os
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw
 
-GROUND = (18, 21, 26, 255)     # --ground do tema escuro
+ESCURO = (18, 21, 26, 255)     # --ground
 ACCENT = (255, 90, 31, 255)    # --accent
+BRANCO = (255, 255, 255, 255)
 
+M = 512                        # master: desenha grande e reduz
 RAIZ = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 DESTINO = os.path.join(RAIZ, "icons")
 
 
-def fonte(tamanho):
-    for caminho in (r"C:\Windows\Fonts\arialbd.ttf", r"C:\Windows\Fonts\segoeuib.ttf"):
-        try:
-            return ImageFont.truetype(caminho, tamanho)
-        except OSError:
-            continue
-    return ImageFont.load_default()
+def marca(d, cor, esc):
+    """T construído, centrado no quadro de M×M."""
+    cx = M / 2
+    larg = 350 * esc          # travessão (a barra fixa)
+    esp = 58 * esc            # espessura do travessão
+    haste = 66 * esc          # largura da haste
+    alt = 300 * esc           # altura total da marca
+    y0 = cx - alt / 2
+    d.rounded_rectangle([cx - larg / 2, y0, cx + larg / 2, y0 + esp],
+                        radius=esp * 0.14, fill=cor)
+    d.rounded_rectangle([cx - haste / 2, y0 + esp, cx + haste / 2, y0 + alt],
+                        radius=haste * 0.14, fill=cor)
 
 
-def gerar(size, nome, maskable=False):
-    img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+def gerar(nome, tamanho, tipo="any"):
+    img = Image.new("RGBA", (M, M), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
 
-    if maskable:
-        d.rectangle([0, 0, size, size], fill=GROUND)
-        escala, centro, larg_barra, y_barra = 0.32, 0.45, 0.28, 0.63
+    if tipo == "mono":
+        marca(d, BRANCO, 0.85)          # silhueta, sem fundo
+    elif tipo == "maskable":
+        d.rectangle([0, 0, M, M], fill=ACCENT)
+        marca(d, ESCURO, 0.85)          # cabe no círculo de raio 205
+    elif tipo == "quadrado":            # apple-touch-icon
+        d.rectangle([0, 0, M, M], fill=ACCENT)
+        marca(d, ESCURO, 1.0)
     else:
-        d.rounded_rectangle([0, 0, size - 1, size - 1], radius=int(size * 0.22), fill=GROUND)
-        escala, centro, larg_barra, y_barra = 0.42, 0.43, 0.38, 0.68
+        d.rounded_rectangle([0, 0, M - 1, M - 1], radius=int(M * 0.22), fill=ACCENT)
+        marca(d, ESCURO, 1.0)
 
-    f = fonte(int(size * escala))
-    texto = "TAF"
-    bb = d.textbbox((0, 0), texto, font=f)
-    d.text(
-        ((size - (bb[2] - bb[0])) / 2 - bb[0], size * centro - (bb[3] - bb[1]) / 2 - bb[1]),
-        texto, font=f, fill=ACCENT,
-    )
-
-    w = int(size * larg_barra)
-    h = max(2, int(size * 0.035))
-    y = int(size * y_barra)
-    d.rounded_rectangle([(size - w) // 2, y, (size + w) // 2, y + h], radius=h // 2, fill=ACCENT)
-
+    if tamanho != M:
+        img = img.resize((tamanho, tamanho), Image.LANCZOS)
     caminho = os.path.join(DESTINO, nome)
     img.save(caminho)
-    print("gerado:", nome)
+    print("gerado: %-28s %d px" % (nome, tamanho))
 
 
 if __name__ == "__main__":
     os.makedirs(DESTINO, exist_ok=True)
-    gerar(192, "icon-192.png")
-    gerar(512, "icon-512.png")
-    gerar(512, "icon-maskable-512.png", maskable=True)
-    gerar(180, "apple-touch-icon.png")
+    gerar("icon-192.png", 192)
+    gerar("icon-512.png", 512)
+    gerar("icon-192-maskable.png", 192, "maskable")
+    gerar("icon-maskable-512.png", 512, "maskable")
+    gerar("icon-mono-512.png", 512, "mono")
+    gerar("apple-touch-icon.png", 180, "quadrado")

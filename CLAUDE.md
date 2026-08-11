@@ -144,6 +144,28 @@ obrigatório migrar os dados antigos ou trocar a versão da chave e converter.
 
 ## Decisões que não devem ser desfeitas
 
+**Marca: "Meu TAF", ícone é um T construído.** O nome antigo trazia
+"Semanas 1 a 4" dentro do nome instalado — envelheceria no primeiro bloco
+novo. Hoje `short_name` é "Meu TAF" e `name` não cita semanas.
+
+O ícone é um **T desenhado como objeto** (travessão = barra fixa, haste =
+corpo), escuro sobre laranja sólido. Não é a palavra "TAF": três letras
+viram três elementos de ~14 px quando o ícone é visto a 48 px, e nenhum app
+grande do setor faz isso — os que usam letra (Hevy, Whoop, Peloton) desenham
+**uma** letra como forma geométrica. Fundo laranja e não escuro porque ícone
+escuro perde silhueta em tela inicial preta.
+
+Ao mexer no ícone: rode `tools/gerar-icones.py`, que produz as três famílias
+(`any`, `maskable`, `monochrome`) — elas não são intercambiáveis, e o
+cabeçalho do script explica a diferença. **Nunca** declare
+`"purpose": "any maskable"` no mesmo arquivo. Valide o resultado a 48 px, não
+no tamanho grande.
+
+**Capa só na primeira abertura.** `S.cfg.abriu` marca que já foi vista, e a
+classe `ja-abriu` é posta no `<html>` por um script no `<head>` — antes de a
+página desenhar. Fazer isso no fim do corpo faria a capa piscar para quem já
+usa o app.
+
 **Aviso sonoro é gravação, não síntese.** A primeira versão gerava os bipes
 com osciladores (onda quadrada, depois senoide com harmônico). O usuário
 rejeitou as duas: "toque monofônico é muito feio". Hoje cada opção é um MP3

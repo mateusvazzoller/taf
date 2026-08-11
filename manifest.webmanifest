@@ -1,7 +1,7 @@
 {
-  "name": "TAF · Treino Semanas 1 a 4",
-  "short_name": "TAF",
-  "description": "Rotina de preparação física para o TAF da Polícia Civil do Paraná, com cronômetro, timer de descanso e registro de cargas e marcas.",
+  "name": "Meu TAF — Preparação Física",
+  "short_name": "Meu TAF",
+  "description": "Preparação física para o TAF da Polícia Civil do Paraná: treino, cronômetro, registro de cargas e simulado das cinco provas.",
   "lang": "pt-BR",
   "dir": "ltr",
   "start_url": "./",
@@ -14,6 +14,8 @@
   "icons": [
     { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    { "src": "icons/icon-192-maskable.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon-mono-512.png", "sizes": "512x512", "type": "image/png", "purpose": "monochrome" }
   ]
 }
