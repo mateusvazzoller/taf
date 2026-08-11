@@ -432,15 +432,18 @@
   .dateip:focus{border-color:var(--accent);outline:none}
 
   /* ---------- capa de primeira abertura ---------- */
+  /* overflow-x escondido: o brilho de fundo (::after) tem 150% de largura e
+     vazava para fora, criando barra de rolagem horizontal na capa */
   .capa{position:fixed;inset:0;z-index:120;display:flex;flex-direction:column;
         background:var(--ground);padding:calc(26px + env(safe-area-inset-top)) 22px
-        calc(26px + env(safe-area-inset-bottom));overflow-y:auto}
+        calc(26px + env(safe-area-inset-bottom));overflow-y:auto;overflow-x:hidden}
   html.ja-abriu .capa{display:none}
   .capa::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.42;
     background:repeating-linear-gradient(90deg,transparent 0 39px,var(--line-soft) 39px 40px)}
-  .capa::after{content:"";position:absolute;left:50%;top:-18%;width:150%;height:58%;
-    transform:translateX(-50%);pointer-events:none;
-    background:radial-gradient(ellipse at center,var(--accent-soft) 0%,transparent 68%)}
+  /* o brilho é desenhado dentro da própria caixa (gradiente dimensionado),
+     em vez de um bloco de 150% que estourava a largura */
+  .capa::after{content:"";position:absolute;left:0;right:0;top:0;height:56%;pointer-events:none;
+    background:radial-gradient(125% 100% at 50% 0%,var(--accent-soft) 0%,transparent 70%)}
   .capa-in{position:relative;margin:auto;width:100%;max-width:420px;text-align:center}
   .capa-marca{width:88px;height:88px;margin:0 auto 22px;display:block}
   .capa h1{font-family:var(--f-display);font-size:44px;letter-spacing:.045em;text-transform:uppercase;
