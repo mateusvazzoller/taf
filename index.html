@@ -13,14 +13,6 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png" sizes="192x192" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<script>
-/* Decide antes de desenhar se a capa entra: assim quem já usa o app não vê
-   a capa piscar, e quem abre pela primeira vez não vê o treino piscar. */
-try{
-  var _s = JSON.parse(localStorage.getItem("taf-pcpr-v1") || "{}");
-  if(_s && _s.cfg && _s.cfg.abriu) document.documentElement.className += " ja-abriu";
-}catch(e){}
-</script>
 </head>
 <body>
 <title>Meu TAF · Preparação Física</title>
@@ -433,6 +425,12 @@ try{
   .capa h1 span{color:var(--accent)}
   .capa .corp{font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--ink-3);
               font-weight:700;margin-top:9px}
+  .capa .conta{margin-top:18px;border:1px solid var(--accent);background:var(--accent-soft);
+               border-radius:10px;padding:9px 15px;display:inline-flex;align-items:baseline;gap:9px}
+  .capa .conta b{font-family:var(--f-display);font-size:27px;line-height:1;color:var(--accent);
+                 font-weight:700;font-variant-numeric:tabular-nums}
+  .capa .conta span{font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;
+                    color:var(--ink-2);font-weight:700}
   .capa .promessa{color:var(--ink-2);font-size:14.5px;line-height:1.5;margin:20px auto 0;max-width:330px}
   .capa .provas{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:22px 0 0}
   .capa .provas span{font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;
@@ -479,6 +477,7 @@ try{
     </svg>
     <h1>Meu TAF<span>.</span></h1>
     <div class="corp">Polícia Civil do Paraná</div>
+    <div class="conta" id="capaConta" style="display:none"></div>
     <p class="promessa">O treino do seu professor, o cronômetro e as cinco provas
       no mesmo lugar — funcionando até sem internet.</p>
     <div class="provas">
@@ -2128,10 +2127,19 @@ document.getElementById("btnResetAll").addEventListener("click", function(){
    de a página desenhar, para não piscar nem de um lado nem do outro.
    ============================================================ */
 document.getElementById("capaGo").addEventListener("click", function(){
-  S.cfg.abriu = true; save();
   document.documentElement.className += " ja-abriu";
   try{ ac(); }catch(e){}          /* toque do usuário: aproveita e libera o áudio */
 });
+/* Mostra os dias que faltam já na capa: como ela aparece a cada abertura,
+   precisa dizer algo que muda, senão vira só um obstáculo antes do treino. */
+function renderCapa(){
+  var n = diasProva(), alvo = document.getElementById("capaConta");
+  if(n === null || n < 0){ alvo.style.display = "none"; return; }
+  alvo.style.display = "";
+  alvo.innerHTML = n === 0
+    ? '<span>a prova é hoje</span>'
+    : '<b>'+n+'</b><span>'+(n===1 ? "dia para a prova" : "dias para a prova")+'</span>';
+}
 
 /* ============================================================
    Atualização do app
@@ -2218,7 +2226,7 @@ if(S.week<1||S.week>4) S.week=1;
 if(S.day<0||S.day>=PLAN.length) S.day=0;
 if(["treino","sim","hist"].indexOf(S.tab)<0) S.tab="treino";
 tafInit();
-applyTheme(); syncCfgUI();
+applyTheme(); syncCfgUI(); renderCapa();
 renderHead(); renderTabs(); renderView(); applyWake();
 
 })();
