@@ -149,12 +149,35 @@
               place-items:center}
 
   .steps{counter-reset:st;display:grid;gap:11px;margin:0 0 4px;padding:0;list-style:none}
-  .steps li{counter-increment:st;display:flex;gap:11px;font-size:14px;line-height:1.4}
-  .steps li::before{content:counter(st);flex:0 0 auto;width:23px;height:23px;border-radius:6px;
-                    background:var(--surface-2);border:1px solid var(--line);color:var(--ink-2);
-                    font-family:var(--f-mono);font-size:12px;font-weight:600;display:grid;
-                    place-items:center;margin-top:1px}
+  /* O número é posicionado por cima, não como item de flex: com flex, cada
+     trecho de texto e cada <b> virava uma coluna e a frase quebrava. */
+  .steps li{counter-increment:st;position:relative;padding-left:34px;min-height:23px;
+            font-size:14px;line-height:1.45}
+  .steps li::before{content:counter(st);position:absolute;left:0;top:0;width:23px;height:23px;
+                    border-radius:6px;background:var(--surface-2);border:1px solid var(--line);
+                    color:var(--ink-2);font-family:var(--f-mono);font-size:12px;font-weight:600;
+                    display:grid;place-items:center}
   .steps b{color:var(--ink);font-weight:700}
+
+  /* etiqueta do aparelho detectado: deixa claro que os passos abaixo são
+     os do celular de quem está lendo, e não uma lista genérica */
+  .plat{display:inline-flex;align-items:center;gap:7px;margin:-8px 0 15px;padding:5px 10px;
+        border:1px solid var(--line);border-radius:6px;background:var(--surface-2);
+        font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--ink-2)}
+  .plat b{color:var(--accent);font-weight:700}
+
+  /* ---------- QR e link do app ---------- */
+  .qrbox{display:flex;align-items:center;gap:13px;margin:0 0 16px;padding:12px;
+         border:1px solid var(--line);border-radius:10px;background:var(--surface-2)}
+  .qr{flex:0 0 auto;width:92px;height:92px;border-radius:6px;background:#fff;padding:3px}
+  .qrtx{flex:1;min-width:0}
+  .qrtx .qt{font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);
+            font-weight:700}
+  .qrtx .qu{font-family:var(--f-mono);font-size:12px;color:var(--ink);margin-top:5px;
+            word-break:break-all;line-height:1.35;user-select:all}
+  .qrtx button{margin-top:8px;font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;
+               color:var(--ink-2);font-weight:700;border:1px solid var(--line);border-radius:5px;
+               padding:5px 9px;background:var(--surface)}
 
   /* ---------- resumo da sessão ---------- */
   .meta{display:flex;align-items:center;gap:13px;padding:15px 0 4px}
@@ -439,6 +462,16 @@
             color:var(--accent-ink);font-family:var(--f-display);font-size:19px;letter-spacing:.07em;
             text-transform:uppercase;font-weight:700}
   .capa .go:active{opacity:.86}
+  /* Segundo botão de verdade, contornado: some como texto sublinhado e
+     ninguém acha — mas continua abaixo do laranja na hierarquia. */
+  .capa .inst{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;height:52px;
+              margin-top:11px;border:1.5px solid var(--accent);border-radius:12px;
+              background:transparent;color:var(--accent);font-family:var(--f-display);font-size:16px;
+              letter-spacing:.06em;text-transform:uppercase;font-weight:700}
+  .capa .inst i{font-style:normal;width:22px;height:22px;border-radius:6px;background:var(--accent);
+                color:var(--accent-ink);display:grid;place-items:center;font-size:16px;line-height:1;
+                font-family:var(--f-body);font-weight:700}
+  .capa .inst:active{background:var(--accent-soft)}
   .capa .rodape{color:var(--ink-3);font-size:12px;margin-top:15px;line-height:1.45}
 
   /* ---------- aviso de versão nova ---------- */
@@ -485,6 +518,7 @@
       <span>Shuttle run</span><span>Corda</span>
     </div>
     <button class="go" id="capaGo">Iniciar meu treino</button>
+    <button class="inst" id="capaInst" style="display:none"><i>+</i>Instalar na tela inicial</button>
     <p class="rodape">Seus registros ficam só neste aparelho.</p>
   </div>
 </div>
@@ -533,7 +567,16 @@
 
 <div class="sheet" id="isheet">
   <div class="panel">
-    <h3>Colocar na tela inicial</h3>
+    <h3 id="iTitulo">Colocar na tela inicial</h3>
+    <div class="plat" id="iPlat" style="display:none"></div>
+    <div class="qrbox">
+      <svg class="qr" viewBox="0 0 33 33" role="img" aria-label="QR com o endereço do app"><rect width="33" height="33" fill="#fff"></rect><path stroke="#12151A" stroke-width="1" d="M2 2.5h7m1 0h1m1 0h2m4 0h1m2 0h2m1 0h7m-29 1h1m5 0h1m1 0h3m2 0h1m2 0h1m5 0h1m5 0h1m-29 1h1m1 0h3m1 0h1m2 0h2m2 0h1m2 0h1m2 0h2m1 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h2m1 0h1m1 0h2m3 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m6 0h4m2 0h1m2 0h1m1 0h3m1 0h1m-29 1h1m5 0h1m2 0h1m4 0h1m1 0h4m2 0h1m5 0h1m-29 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-21 1h2m1 0h2m3 0h2m-18 1h1m1 0h2m1 0h3m4 0h2m3 0h2m3 0h1m2 0h1m1 0h2m-29 1h2m2 0h1m6 0h2m3 0h1m1 0h3m1 0h3m3 0h1m-29 1h1m3 0h1m1 0h1m1 0h1m1 0h2m2 0h1m1 0h1m1 0h1m1 0h2m4 0h2m-26 1h1m1 0h1m2 0h2m3 0h2m1 0h1m2 0h6m4 0h1m-28 1h4m1 0h2m2 0h3m4 0h1m1 0h1m5 0h2m-26 1h1m2 0h2m2 0h1m1 0h1m2 0h3m3 0h1m1 0h2m3 0h3m-29 1h1m1 0h5m3 0h1m3 0h1m4 0h2m1 0h1m3 0h3m-28 1h1m1 0h1m3 0h1m1 0h2m2 0h1m2 0h1m2 0h2m1 0h3m2 0h1m-28 1h3m1 0h5m2 0h1m3 0h1m2 0h4m2 0h2m1 0h1m-27 1h1m1 0h2m2 0h2m1 0h1m2 0h1m1 0h1m2 0h1m1 0h2m1 0h1m1 0h3m-28 1h1m2 0h5m1 0h2m1 0h1m2 0h2m6 0h2m1 0h1m-25 1h3m2 0h2m3 0h1m4 0h1m1 0h2m1 0h2m2 0h1m-26 1h1m1 0h1m1 0h4m1 0h1m1 0h2m1 0h4m1 0h7m-19 1h2m2 0h3m1 0h5m3 0h5m-29 1h7m1 0h2m1 0h1m1 0h1m3 0h1m1 0h2m1 0h1m1 0h2m1 0h1m-28 1h1m5 0h1m1 0h1m2 0h1m3 0h1m4 0h1m3 0h2m-26 1h1m1 0h3m1 0h1m2 0h3m2 0h1m2 0h1m2 0h5m1 0h1m-27 1h1m1 0h3m1 0h1m1 0h3m1 0h1m1 0h2m1 0h2m2 0h1m1 0h3m2 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m1 0h2m1 0h2m1 0h1m1 0h3m2 0h1m2 0h1m1 0h1m-29 1h1m5 0h1m3 0h4m5 0h3m1 0h3m1 0h1m-28 1h7m1 0h1m2 0h1m6 0h4m2 0h1m2 0h1"></path></svg>
+      <div class="qrtx">
+        <div class="qt">Endereço do app</div>
+        <div class="qu" id="iUrl">https://mateusvazzoller.github.io/taf/</div>
+        <button id="iCopiar" type="button">Copiar link</button>
+      </div>
+    </div>
     <div id="iSteps"></div>
     <div class="btnrow"><button id="iClose">Entendi</button></div>
   </div>
@@ -1849,30 +1892,49 @@ function ehIOS(){
 }
 function ehAndroid(){ return /Android/i.test(navigator.userAgent); }
 function emIframe(){ try{ return window.top !== window.self; }catch(e){ return true; } }
+/* No iPhone só o Safari instala: Chrome, Firefox e Edge de lá usam o motor
+   da Apple mas não recebem a opção. Por isso vale checar qual é. */
+function ehSafariIOS(){ return ehIOS() && !/CriOS|FxiOS|EdgiOS|OPiOS/.test(navigator.userAgent); }
+function ehChromeAndroid(){
+  var ua = navigator.userAgent;
+  return ehAndroid() && /Chrome|Chromium/.test(ua) && !/wv\)|; wv/.test(ua);
+}
 
 function passosInstalacao(){
   var aviso = emIframe()
     ? '<p class="vsub" style="margin:0 0 14px">Você está vendo o app dentro de outro aplicativo. '+
       'Primeiro abra este endereço direto no navegador do celular — só de lá dá para instalar.</p>'
     : "";
+  var p = [];
   if(ehIOS()){
-    return aviso +
-      '<ul class="steps">'+
-      '<li>Abra este endereço no <b>Safari</b>.</li>'+
-      '<li>Toque no botão <b>Compartilhar</b> — o quadrado com a seta para cima, na barra de baixo.</li>'+
-      '<li>Role a lista e toque em <b>Adicionar à Tela de Início</b>.</li>'+
-      '<li>Confirme em <b>Adicionar</b>, no canto superior direito.</li>'+
-      '</ul>'+
-      '<p class="vsub">O iPhone não deixa nenhum site se instalar sozinho — esse caminho é o único que a Apple permite, e leva uns 10 segundos.</p>';
+    /* já está no Safari? então não faz sentido mandar abrir no Safari */
+    if(!ehSafariIOS()) p.push('Abra este endereço no <b>Safari</b> — no iPhone só ele instala.');
+    p.push('Toque no botão <b>Compartilhar</b>, o quadrado com a seta para cima.');
+    p.push('Role a lista e toque em <b>Adicionar à Tela de Início</b>.');
+    p.push('Confirme em <b>Adicionar</b>, no canto superior direito.');
+    return aviso + '<ul class="steps"><li>' + p.join('</li><li>') + '</li></ul>' +
+      '<p class="vsub">O iPhone não deixa nenhum site se instalar sozinho — esse caminho é o '+
+      'único que a Apple permite, e leva uns 10 segundos.</p>';
   }
   if(ehAndroid()){
-    return aviso +
-      '<ul class="steps">'+
-      '<li>Abra este endereço no <b>Chrome</b>.</li>'+
-      '<li>Toque no menu <b>⋮</b>, no canto superior direito.</li>'+
-      '<li>Toque em <b>Adicionar à tela inicial</b> (em algumas versões aparece como <b>Instalar app</b>).</li>'+
-      '<li>Confirme em <b>Adicionar</b>.</li>'+
-      '</ul>';
+    /* O Samsung Internet é muito usado aqui e tem outro caminho: o menu
+       fica na barra de baixo, não no canto de cima. Mandar procurar o ⋮
+       lá em cima faz a pessoa não achar e desistir. */
+    if(/SamsungBrowser/.test(navigator.userAgent)){
+      p.push('Toque no menu <b>☰</b>, na barra de baixo.');
+      p.push('Toque em <b>Adicionar página a</b>.');
+      p.push('Escolha <b>Tela inicial</b> e confirme em <b>Adicionar</b>.');
+    } else if(ehChromeAndroid()){
+      p.push('Toque no menu <b>⋮</b>, no canto superior direito.');
+      p.push('Toque em <b>Adicionar à tela inicial</b> (às vezes aparece como <b>Instalar app</b>).');
+      p.push('Confirme em <b>Adicionar</b>.');
+    } else {
+      p.push('Abra o menu do navegador.');
+      p.push('Procure <b>Adicionar à tela inicial</b> ou <b>Instalar</b>.');
+      p.push('Confirme em <b>Adicionar</b>.');
+      p.push('Se não encontrar, abra este endereço no <b>Chrome</b> — lá o caminho é garantido.');
+    }
+    return aviso + '<ul class="steps"><li>' + p.join('</li><li>') + '</li></ul>';
   }
   return aviso +
     '<ul class="steps">'+
@@ -1883,18 +1945,51 @@ function passosInstalacao(){
     '<p class="vsub">No computador o app funciona igual, mas o atalho na tela inicial só faz sentido no celular.</p>';
 }
 
+/* Quem é o aparelho e o navegador de quem está lendo. Serve para mostrar
+   só os passos que valem para ele — instruções de iPhone num Android é a
+   maneira mais rápida de fazer alguém desistir de instalar. */
+function aparelho(){
+  var ua = navigator.userAgent;
+  if(ehIOS()) return { nome:"iPhone", nav: ehSafariIOS() ? "Safari"
+      : (/CriOS/.test(ua) ? "Chrome" : /FxiOS/.test(ua) ? "Firefox"
+      : /EdgiOS/.test(ua) ? "Edge" : "outro navegador") };
+  if(ehAndroid()) return { nome:"Android", nav: /SamsungBrowser/.test(ua) ? "Samsung Internet"
+      : /Firefox/.test(ua) ? "Firefox" : /EdgA/.test(ua) ? "Edge"
+      : ehChromeAndroid() ? "Chrome" : "outro navegador" };
+  return { nome:"computador", nav:"" };
+}
+
 var isheet = document.getElementById("isheet");
 function abrirInstalar(){
   if(deferredPrompt){
+    /* o Chrome ofereceu a caixa nativa: não precisa de passo a passo */
     var p = deferredPrompt; deferredPrompt = null;
     p.prompt();
     if(p.userChoice) p.userChoice.then(function(){ renderView(); });
     return;
   }
+  var ap = aparelho();
+  document.getElementById("iTitulo").textContent =
+    ap.nome === "computador" ? "Colocar na tela inicial" : "Instalar no " + ap.nome;
+  var plat = document.getElementById("iPlat");
+  if(ap.nav){
+    plat.style.display = "";
+    plat.innerHTML = "Passos para <b>"+esc(ap.nome)+" · "+esc(ap.nav)+"</b>";
+  } else plat.style.display = "none";
   document.getElementById("iSteps").innerHTML = passosInstalacao();
   isheet.classList.add("open");
 }
 document.getElementById("iClose").addEventListener("click", function(){ isheet.classList.remove("open"); });
+document.getElementById("iCopiar").addEventListener("click", function(){
+  var b = this, url = document.getElementById("iUrl").textContent.trim();
+  function avisa(ok){
+    b.textContent = ok ? "Link copiado" : "Copie o link acima";
+    setTimeout(function(){ b.textContent = "Copiar link"; }, 2200);
+  }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(function(){ avisa(true); }, function(){ avisa(false); });
+  } else avisa(false);
+});
 isheet.addEventListener("click", function(e){ if(e.target===isheet) isheet.classList.remove("open"); });
 
 /* ---------- painel de vídeo ---------- */
@@ -2134,12 +2229,21 @@ document.getElementById("capaGo").addEventListener("click", function(){
    precisa dizer algo que muda, senão vira só um obstáculo antes do treino. */
 function renderCapa(){
   var n = diasProva(), alvo = document.getElementById("capaConta");
-  if(n === null || n < 0){ alvo.style.display = "none"; return; }
-  alvo.style.display = "";
-  alvo.innerHTML = n === 0
-    ? '<span>a prova é hoje</span>'
-    : '<b>'+n+'</b><span>'+(n===1 ? "dia para a prova" : "dias para a prova")+'</span>';
+  if(n === null || n < 0){ alvo.style.display = "none"; }
+  else {
+    alvo.style.display = "";
+    alvo.innerHTML = n === 0
+      ? '<span>a prova é hoje</span>'
+      : '<b>'+n+'</b><span>'+(n===1 ? "dia para a prova" : "dias para a prova")+'</span>';
+  }
+  /* atalho de instalar aqui mesmo: quem vai instalar não precisa entrar no
+     app, achar o cartão e só então instalar */
+  document.getElementById("capaInst").style.display = jaInstalado() ? "none" : "";
 }
+document.getElementById("capaInst").addEventListener("click", function(){
+  document.documentElement.className += " ja-abriu";
+  abrirInstalar();
+});
 
 /* ============================================================
    Atualização do app
