@@ -13,6 +13,16 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png" sizes="192x192" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<script>
+/* A capa é para quando o app é ABERTO, não para toda vez que a página
+   carrega. Recarregar (puxar a tela para baixo, ou o próprio app se
+   recarregando depois de uma atualização) não é abrir de novo, e voltar
+   para a capa no meio do treino atrapalha. O sessionStorage separa os dois
+   casos: ele sobrevive a um recarregamento e ao app minimizado, mas é
+   apagado quando o app é fechado de verdade. Roda aqui no <head>, antes de
+   a página desenhar, senão a capa piscaria antes de sumir. */
+try{ if(sessionStorage.getItem("taf-aberto")) document.documentElement.className += " ja-abriu"; }catch(e){}
+</script>
 </head>
 <body>
 <title>Meu TAF · Preparação Física</title>
@@ -882,7 +892,9 @@ var REG = {
    Estado
    ============================================================ */
 var KEY = "taf-pcpr-v1";
-var FIELDS = ["week","day","done","logs","notas","sess","vid","taf","ini"];
+/* "tab" entra aqui para o app voltar na aba em que você estava: sem isso,
+   recarregar a página no Histórico ou no Simulado jogava você no Treino. */
+var FIELDS = ["week","day","tab","done","logs","notas","sess","vid","taf","ini"];
 var S = { week:1, day:0, tab:"treino", done:{}, logs:{}, notas:{}, sess:{}, vid:{}, ini:{},
           taf:{ metas:{}, tests:[] },
           cfg:{ wake:false, som:true, somTipo:"despertador", auto:true, tema:"auto" } };
@@ -1939,9 +1951,12 @@ function renderTabs(){
   tabS.setAttribute("aria-pressed", S.tab==="sim");
   tabH.setAttribute("aria-pressed", S.tab==="hist");
 }
-tabT.addEventListener("click", function(){ S.tab="treino"; renderTabs(); renderView(); window.scrollTo(0,0); });
-tabS.addEventListener("click", function(){ S.tab="sim"; renderTabs(); renderView(); window.scrollTo(0,0); });
-tabH.addEventListener("click", function(){ S.tab="hist"; renderTabs(); renderView(); window.scrollTo(0,0); });
+function vaiPara(aba){
+  S.tab = aba; save(); renderTabs(); renderView(); window.scrollTo(0,0);
+}
+tabT.addEventListener("click", function(){ vaiPara("treino"); });
+tabS.addEventListener("click", function(){ vaiPara("sim"); });
+tabH.addEventListener("click", function(){ vaiPara("hist"); });
 
 /* ---------- esforço da sessão (pergunta ao concluir) ---------- */
 var rsheet = document.getElementById("rsheet");
@@ -2317,12 +2332,17 @@ document.getElementById("btnResetAll").addEventListener("click", function(){
 });
 
 /* ============================================================
-   Capa de primeira abertura
-   Só aparece uma vez. A classe que decide já foi posta no <html> antes
-   de a página desenhar, para não piscar nem de um lado nem do outro.
+   Capa de abertura
+   Aparece a cada abertura do app, mas não a cada carregamento da página —
+   a marca fica no sessionStorage e o script lá do <head> a lê antes de a
+   página desenhar, para a capa não piscar em quem só recarregou.
    ============================================================ */
-document.getElementById("capaGo").addEventListener("click", function(){
+function marcaAberto(){
   document.documentElement.className += " ja-abriu";
+  try{ sessionStorage.setItem("taf-aberto","1"); }catch(e){}
+}
+document.getElementById("capaGo").addEventListener("click", function(){
+  marcaAberto();
   try{ ac(); }catch(e){}          /* toque do usuário: aproveita e libera o áudio */
 });
 /* Mostra os dias que faltam já na capa: como ela aparece a cada abertura,
@@ -2341,7 +2361,7 @@ function renderCapa(){
   document.getElementById("capaInst").style.display = jaInstalado() ? "none" : "";
 }
 document.getElementById("capaInst").addEventListener("click", function(){
-  document.documentElement.className += " ja-abriu";
+  marcaAberto();
   abrirInstalar();
 });
 

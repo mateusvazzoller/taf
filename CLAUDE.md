@@ -161,10 +161,20 @@ cabeçalho do script explica a diferença. **Nunca** declare
 `"purpose": "any maskable"` no mesmo arquivo. Valide o resultado a 48 px, não
 no tamanho grande.
 
-**Capa só na primeira abertura.** `S.cfg.abriu` marca que já foi vista, e a
-classe `ja-abriu` é posta no `<html>` por um script no `<head>` — antes de a
-página desenhar. Fazer isso no fim do corpo faria a capa piscar para quem já
-usa o app.
+**Capa a cada abertura do app, não a cada carregamento da página.** A marca
+fica no `sessionStorage` (`taf-aberto`), posta quando o usuário toca em
+"Iniciar meu treino", e um script no `<head>` — antes de a página desenhar,
+senão a capa pisca — põe a classe `ja-abriu` no `<html>`. O `sessionStorage`
+é justamente o que separa os três casos: sobrevive a um recarregamento
+(inclusive ao recarregamento que o próprio app faz depois de uma
+atualização) e ao app minimizado, mas é apagado quando o app é fechado de
+verdade. Guardar isso em `localStorage` faria a capa aparecer só uma vez na
+vida; não guardar em lugar nenhum a fazia voltar a cada F5, que é o bug que
+o usuário reportou.
+
+**A aba (`S.tab`) é persistida.** Ela ficava fora de `FIELDS` e os cliques nas
+abas não chamavam `save()`, então recarregar no Histórico ou no Simulado
+jogava o usuário no Treino.
 
 **Aviso sonoro é gravação, não síntese.** A primeira versão gerava os bipes
 com osciladores (onda quadrada, depois senoide com harmônico). O usuário
