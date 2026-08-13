@@ -3,7 +3,7 @@
    a versão nova quando há sinal — assim uma atualização não fica presa.
    Ao publicar uma alteração, troque o número da versão abaixo. */
 
-const VERSAO = "taf-v9";
+const VERSAO = "taf-v10";
 const ARQUIVOS = [
   "./",
   "./index.html",

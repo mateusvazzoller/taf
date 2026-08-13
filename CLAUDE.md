@@ -199,6 +199,28 @@ Voltar para rAF reintroduz o bug. **O tempo total do treino segue a mesma
 regra**: `S.ini` guarda o instante da primeira série e o total é sempre
 `agora − início`, então fechar o app no meio não atrapalha.
 
+**O aviso de fim de descanso não depende do JavaScript estar rodando.** Contar
+certo não bastava: com o app minimizado o navegador congela o `setInterval` e o
+aviso sairia atrasado (ou só quando o usuário voltasse). `agendaAvisos()` marca
+a contagem 3-2-1 e o aviso final direto na placa de áudio
+(`src.start(instanteAbsoluto)`), que roda em outra linha de execução. Duas
+armadilhas: (1) o áudio do app é desligado quando ele sai da frente, então
+`segurarAudio(true)` põe um tom de 200 Hz a −68 dB em looping **no
+`visibilitychange` para `hidden`** — só fora da tela, senão atrapalharia música
+tocando durante o treino; (2) o `loop()` precisa saber se o som já saiu sozinho,
+senão toca de novo ao voltar — daí a comparação `actx.currentTime >= T.fimAudio`.
+Toda mudança no descanso (±15, pausa, play, trocar o som, ligar/desligar o som)
+tem que chamar `agendaAvisos()` de novo, e `cancelaAgenda()` só interrompe o que
+ainda não começou, senão cortaria o aviso no meio. `T.ger` descarta agendamento
+de um `carregaSom()` que resolveu tarde demais.
+
+**O relógio do topo some quando o treino é concluído.** Antes ele congelava no
+total e ficava parado no cabeçalho — o usuário leu isso como "não zera". O total
+não se perde: vai para `S.sess[nk].dur`, aparece no botão "Concluído em …" e no
+Histórico. Reabrir o treino devolve o relógio **de onde parou**
+(`S.ini[nk] = agora − dur`), e não do horário da primeira série, que pode ter
+sido dias atrás.
+
 **Ícone ▶ abre o painel com player embutido** (decisão revista em 10/08/2026 a
 pedido do usuário — antes era só busca em outra aba). O embed é um iframe do
 YouTube criado sob demanda; não há CDN nem biblioteca de player. Em `file://`

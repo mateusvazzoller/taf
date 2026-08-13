@@ -104,7 +104,6 @@
   .stime{height:34px;padding:0 9px;display:grid;place-items:center;border:1px solid var(--accent);
          border-radius:8px;background:var(--accent-soft);color:var(--accent);font-family:var(--f-mono);
          font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
-  .stime.done{border-color:var(--good);background:var(--good-soft);color:var(--good)}
 
   .weeks{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding-bottom:10px}
   .wk{border:1px solid var(--line);border-radius:8px;background:var(--surface);padding:7px 4px 6px;
@@ -1113,9 +1112,16 @@ async function applyWake(){
   }
 }
 document.addEventListener("visibilitychange", function(){
-  if(document.visibilityState!=="visible") return;
+  if(document.visibilityState!=="visible"){
+    /* saindo da frente no meio de um descanso: liga o som inaudível, senão o
+       aparelho desliga o áudio do app e o aviso marcado não sairia na hora */
+    if(T.mode==="rest" && T.running) segurarAudio(true);
+    return;
+  }
+  segurarAudio(false);          /* de volta na tela, não precisa mais segurar */
   applyWake();
-  /* volta de segundo plano: reacerta o relógio na hora */
+  /* religa o áudio, se o aparelho o tiver desligado, e reacerta o relógio */
+  if(T.mode==="rest" && T.running){ try{ ac(); }catch(e){} }
   if(T.mode && T.running) loop();
   /* e aproveita para ver se saiu versão nova do app */
   if(swReg) swReg.update().catch(function(){});
@@ -1128,7 +1134,7 @@ document.addEventListener("visibilitychange", function(){
    acumulados: se a tela apagar ou você trocar de app no meio do descanso,
    a contagem continua certa quando voltar. */
 var T = { mode:null, anchor:0, held:0, running:false, id:null, target:null, rang:false,
-          lastSec:0, inicial:0 };
+          lastSec:0, inicial:0, agenda:[], agendaOk:false, fimAudio:0, ger:0 };
 var dock = document.getElementById("dock");
 var dockTime = document.getElementById("dockTime");
 var dockLbl = document.getElementById("dockLbl");
@@ -1146,20 +1152,97 @@ function setLeft(sec){
   T.held = Math.max(0,sec);
   if(T.running) T.anchor = Date.now() + T.held*1000;
 }
+
+/* ---------- descanso que continua valendo com o app minimizado ----------
+   Ao trocar de app ou apagar a tela, o navegador congela o JavaScript da
+   página: o setInterval abaixo para de rodar e o aviso de fim de descanso
+   sairia atrasado ou nem sairia. Duas coisas resolvem isso:
+
+   1) o som do fim (e a contagem 3-2-1) fica marcado na hora certa direto na
+      placa de áudio, que roda em outra linha de execução e não congela junto;
+   2) no instante em que o app sai da frente, um som inaudível começa a tocar
+      em looping — sem isso o aparelho desliga o áudio do app e a marcação
+      acima ficaria esperando. Ele só toca com o app fora da tela, para não
+      atrapalhar música tocando durante o treino, e para no momento em que
+      você volta.
+
+   Quando você volta para o app, o tempo é recalculado pelo relógio do
+   aparelho de qualquer jeito, então a conta nunca fica errada. */
+var keepSrc = null;
+function segurarAudio(ligar){
+  try{
+    if(ligar){
+      if(keepSrc) return;
+      var a = ac(), n = Math.floor(a.sampleRate*2), buf = a.createBuffer(1, n, a.sampleRate);
+      var d = buf.getChannelData(0);
+      for(var i=0;i<n;i++) d[i] = Math.sin(i/a.sampleRate*2*Math.PI*200) * .0004;  /* −68 dB */
+      var s = a.createBufferSource();
+      s.buffer = buf; s.loop = true; s.connect(a.destination); s.start();
+      keepSrc = s;
+    } else if(keepSrc){
+      try{ keepSrc.stop(); }catch(e){}
+      keepSrc.disconnect(); keepSrc = null;
+    }
+  }catch(e){}
+}
+/* Desmarca o que ainda não tocou. O que já começou a tocar é deixado em paz,
+   senão cancelar cortaria o aviso no meio. */
+function cancelaAgenda(){
+  var agora = actx ? actx.currentTime : 0;
+  T.agenda.forEach(function(x){ if(x.quando > agora + .02){ try{ x.no.stop(); }catch(e){} } });
+  T.agenda = []; T.agendaOk = false; T.ger++;
+}
+function agendaAvisos(){
+  cancelaAgenda();
+  if(!S.cfg.som || T.mode!=="rest" || !T.running) return;
+  var ger = T.ger, tipo = S.cfg.somTipo;
+  if(SONS.indexOf(tipo)<0) tipo = SONS[0];
+  carregaSom(tipo).then(function(buf){
+    if(ger!==T.ger || T.mode!=="rest" || !T.running) return;   /* mudou enquanto carregava */
+    var a = ac(), falta = tLeft();
+    if(falta<=0) return;
+    var fim = a.currentTime + falta;          /* o instante do fim, no relógio do áudio */
+    function marca(quando, dur, vol){
+      if(quando < a.currentTime + .05) return;
+      var src = a.createBufferSource(), g = a.createGain();
+      src.buffer = buf;
+      g.gain.setValueAtTime(vol, quando);
+      if(dur){
+        g.gain.setValueAtTime(vol, quando+Math.max(dur-.05,.01));
+        g.gain.linearRampToValueAtTime(.0001, quando+dur);
+      }
+      src.connect(g); g.connect(a.destination);
+      if(dur) src.start(quando, 0, dur); else src.start(quando);
+      T.agenda.push({ no:src, quando:quando });
+    }
+    marca(fim-3, .13, .40); marca(fim-2, .13, .40); marca(fim-1, .13, .40);
+    marca(fim, 0, 1);
+    T.fimAudio = fim;
+    T.agendaOk = T.agenda.length > 0;
+  }).catch(function(){});
+}
+
 function loop(){
   if(!T.running) return;
   if(T.mode==="rest"){
     var left = tLeft();
     if(left<=0){
+      /* com o app minimizado o som já saiu sozinho pela agenda; aqui só falta
+         a vibração e a tela. Se o áudio ficou para trás, toca agora. */
+      var jaSaiu = T.agendaOk && actx && actx.currentTime >= T.fimAudio - .05;
       T.running=false; T.held=0; T.rang=true;
-      stopLoop(); beep(3);
+      stopLoop(); cancelaAgenda(); segurarAudio(false);
+      if(jaSaiu){ if(S.cfg.som) vibra([200,110,200,110,200]); } else beep(3);
       dock.classList.remove("soon"); dock.classList.add("ring"); render_dock();
       setTimeout(function(){ if(T.rang) closeDock(); }, 8000);
       return;
     }
     /* contagem falada em bipes: 3, 2, 1 — dá para treinar sem olhar a tela */
     var s = Math.ceil(left);
-    if(s<=3 && s>=1 && T.lastSec!==s){ T.lastSec=s; tick(); }
+    if(s<=3 && s>=1 && T.lastSec!==s){
+      T.lastSec=s;
+      if(T.agendaOk){ if(S.cfg.som) vibra(40); } else tick();
+    }
     dock.classList.toggle("soon", left<=5);
   }
   render_dock();
@@ -1169,11 +1252,12 @@ function stopLoop(){ if(T.id){ clearInterval(T.id); T.id=null; } }
 function toggleRun(){
   if(T.running){
     T.held = T.mode==="rest" ? tLeft() : tUp();
-    T.running=false; stopLoop();
+    T.running=false; stopLoop(); cancelaAgenda(); segurarAudio(false);
   } else {
     T.running=true;
     T.anchor = T.mode==="rest" ? Date.now()+T.held*1000 : Date.now()-T.held*1000;
     startLoop();
+    if(T.mode==="rest") agendaAvisos();
   }
   render_dock();
 }
@@ -1183,24 +1267,26 @@ function startRest(sec,label){
   T.rang=false; T.target=null; T.lastSec=0; T.inicial=sec;
   dock.classList.remove("ring","soon"); dock.classList.add("open");
   dockLbl.textContent = label || "Descanso";
-  render_dock(); startLoop();
+  render_dock(); startLoop(); agendaAvisos();
 }
 function startUp(target,label){
   T.mode="up"; T.held=0; T.running=true; T.anchor=Date.now();
   T.rang=false; T.target=target||null; T.lastSec=0;
+  cancelaAgenda(); segurarAudio(false);
   dock.classList.remove("ring","soon"); dock.classList.add("open");
   dockLbl.textContent = label || "Cronômetro";
   render_dock(); startLoop();
 }
 function closeDock(){
   T.running=false; T.rang=false; T.mode=null; T.target=null; T.held=0; T.lastSec=0;
-  stopLoop();
+  stopLoop(); cancelaAgenda(); segurarAudio(false);
   dock.classList.remove("open","ring","soon");
 }
 /* Volta o cronômetro ao ponto de partida e deixa parado, esperando o play:
    é o "stop" — no descanso volta ao tempo cheio, no cronômetro volta a zero. */
 function zeraTempo(){
   T.running = false; stopLoop(); T.lastSec = 0; T.rang = false;
+  cancelaAgenda(); segurarAudio(false);
   T.held = T.mode==="rest" ? (T.inicial||0) : 0;
   dock.classList.remove("ring","soon");
   render_dock();
@@ -1212,8 +1298,8 @@ function render_dock(){
     if(T.rang){
       b.push(['pri','Ok', closeDock]);
     } else {
-      b.push(['','−15', function(){ setLeft(tLeft()-15); T.lastSec=0; render_dock(); loop(); }]);
-      b.push(['','+15', function(){ setLeft(tLeft()+15); T.lastSec=0; render_dock(); }]);
+      b.push(['','−15', function(){ setLeft(tLeft()-15); T.lastSec=0; agendaAvisos(); render_dock(); loop(); }]);
+      b.push(['','+15', function(){ setLeft(tLeft()+15); T.lastSec=0; agendaAvisos(); render_dock(); }]);
       b.push(['','■', zeraTempo]);
       b.push(['', T.running?'❚❚':'▶', toggleRun]);
       b.push(['pri','Pular', closeDock]);
@@ -1256,10 +1342,14 @@ function marcaInicio(w,d){
   var nk = kSess(w,d);
   if(!S.ini[nk]) S.ini[nk] = Date.now();
 }
-/* segundos decorridos, ou null se a sessão nem começou */
+/* Segundos decorridos, ou null quando não há treino em andamento — seja
+   porque ainda não começou, seja porque já foi concluído. Ao concluir, o
+   total vai para o registro da sessão (botão "Concluído" e Histórico) e o
+   relógio do topo some: deixá-lo parado marcando o tempo do treino passado
+   dava a impressão de que não tinha zerado. */
 function tempoSessao(w,d){
-  var nk = kSess(w,d), fim = S.sess[nk];
-  if(fim && fim.dur != null) return fim.dur;      /* concluído: valor congelado */
+  var nk = kSess(w,d);
+  if(S.sess[nk]) return null;                     /* concluído */
   var t0 = S.ini[nk];
   return t0 ? (Date.now()-t0)/1000 : null;
 }
@@ -1268,7 +1358,6 @@ function renderSessTime(){
   if(seg === null){ sessTimeEl.style.display = "none"; return; }
   sessTimeEl.style.display = "";
   sessTimeEl.textContent = fmtLongo(seg);
-  sessTimeEl.classList.toggle("done", !!S.sess[kSess(S.week,S.day)]);
 }
 setInterval(renderSessTime, 1000);
 
@@ -1496,9 +1585,17 @@ function renderView(){
   /* concluir */
   var fin = S.sess[nk];
   var fb = el('<button class="finish'+(fin?" is-done":"")+'">'+
-    (fin? "Concluído em "+esc(fin.data)+(fin.rpe?" · "+RPEL[fin.rpe]:"") : "Concluir treino")+'</button>');
+    (fin? "Concluído em "+esc(fin.data)+(fin.dur!=null?" · "+fmtLongo(fin.dur):"")+
+          (fin.rpe?" · "+RPEL[fin.rpe]:"") : "Concluir treino")+'</button>');
   fb.addEventListener("click", function(){
-    if(S.sess[nk]){ delete S.sess[nk]; save(); renderHead(); renderView(); }
+    if(S.sess[nk]){
+      var total = S.sess[nk].dur;
+      delete S.sess[nk];
+      /* reabrindo o treino, o relógio do topo volta de onde parou — e não
+         do horário da primeira série, que pode ter sido dias atrás */
+      if(total != null) S.ini[nk] = Date.now() - total*1000;
+      save(); renderHead(); renderView();
+    }
     else { rPend = nk; rsheet.classList.add("open"); }
   });
   viewEl.appendChild(fb);
@@ -2127,7 +2224,7 @@ inProva.addEventListener("change", function(){
 });
 
 bindSwitch("swWake","wake",applyWake);
-bindSwitch("swSound","som",function(){ if(S.cfg.som) beep(1); });
+bindSwitch("swSound","som",function(){ if(S.cfg.som) beep(1); agendaAvisos(); });
 bindSwitch("swAuto","auto");
 
 /* ---------- tipo de som ---------- */
@@ -2135,7 +2232,7 @@ document.getElementById("segSom").addEventListener("click", function(e){
   var b = e.target.closest("button");
   if(!b) return;
   S.cfg.somTipo = b.dataset.s;
-  save(); marcaSom();
+  save(); marcaSom(); agendaAvisos();   /* descanso em andamento passa a usar o novo som */
   if(S.cfg.som) beep(3); /* toca o aviso inteiro para você comparar */
 });
 function marcaSom(){
