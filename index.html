@@ -1841,8 +1841,8 @@ function renderHist(){
   var nSess = Object.keys(S.sess).length, nLogs = Object.keys(S.logs).length;
   var bk = el('<div class="hcard" style="margin-top:16px">'+
     '<div class="hrow"><div><div class="nm">Seus dados</div>'+
-    '<div class="dt" style="margin-top:2px">'+nSess+' sessão'+(nSess===1?"":"es")+' concluída'+
-    (nSess===1?"":"s")+' · '+nLogs+' registro'+(nLogs===1?"":"s")+'</div></div></div>'+
+    '<div class="dt" style="margin-top:2px">'+nSess+(nSess===1?" sessão concluída":" sessões concluídas")+
+    ' · '+nLogs+' registro'+(nLogs===1?"":"s")+'</div></div></div>'+
     '<div class="btnrow" style="margin-top:12px"><button id="btnExport2">Exportar backup</button></div>'+
     '<p class="vsub">Salva um arquivo com tudo que você marcou, registrou e anotou. Guarde depois de cada semana — se você trocar de celular ou limpar o navegador, é ele que traz seu histórico de volta.</p>'+
   '</div>');

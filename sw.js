@@ -3,7 +3,7 @@
    a versão nova quando há sinal — assim uma atualização não fica presa.
    Ao publicar uma alteração, troque o número da versão abaixo. */
 
-const VERSAO = "taf-v11";
+const VERSAO = "taf-v12";
 /* O Meu Treino mora no mesmo endereço (mateusvazzoller.github.io), em outra
    pasta, e o navegador guarda o cache POR ENDEREÇO — os dois service
    workers enxergam a mesma prateleira. Sem este prefixo, a faxina do
