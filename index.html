@@ -105,7 +105,7 @@ try{ if(sessionStorage.getItem("taf-aberto")) document.documentElement.className
             margin:0;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .brand h1 span{color:var(--accent)}
   .brand .sub{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);
-              font-weight:600;white-space:nowrap}
+              font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .iconbtn{width:34px;height:34px;display:grid;place-items:center;border:1px solid var(--line);
            border-radius:8px;color:var(--ink-2);background:var(--surface)}
   .iconbtn:active{background:var(--surface-2)}
@@ -127,6 +127,16 @@ try{ if(sessionStorage.getItem("taf-aberto")) document.documentElement.className
   .wk[aria-pressed="true"] .l{color:var(--accent-ink);opacity:.72}
   .wk[aria-pressed="true"] .bar{background:rgba(0,0,0,.22)}
   .wk[aria-pressed="true"] .bar i{background:var(--accent-ink)}
+
+  /* Seletor de bloco. Fica acima das semanas porque é ele que decide quais
+     quatro semanas aparecem ali — sem isso seriam oito botões espremidos. */
+  .blocos{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding-bottom:7px}
+  .bl{border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink-3);
+      min-height:31px;padding:5px 7px;display:flex;align-items:center;justify-content:center;gap:5px;
+      font-size:10px;letter-spacing:.09em;text-transform:uppercase;font-weight:600;line-height:1.15;
+      text-align:center;transition:background .12s,border-color .12s,color .12s}
+  .bl span{font-family:var(--f-mono);letter-spacing:0;opacity:.75;flex:0 0 auto}
+  .bl[aria-pressed="true"]{background:var(--surface-2);border-color:var(--ink-3);color:var(--ink)}
 
   .days{display:flex;gap:6px;overflow-x:auto;padding:0 0 11px;scrollbar-width:none;
         margin:0 -14px;padding-left:14px;padding-right:14px}
@@ -546,7 +556,7 @@ try{ if(sessionStorage.getItem("taf-aberto")) document.documentElement.className
     <div class="brand">
       <div>
         <h1>Meu TAF<span>.</span> Polícia Civil</h1>
-        <div class="sub" id="cycleLabel">Bloco base · semanas 1 a 4</div>
+        <div class="sub" id="cycleLabel">Base · 1 a 4</div>
       </div>
       <div class="headrow">
         <div class="stime" id="sessTime" style="display:none" title="Tempo total deste treino">0:00</div>
@@ -554,6 +564,7 @@ try{ if(sessionStorage.getItem("taf-aberto")) document.documentElement.className
         <button class="iconbtn" id="btnCfg" aria-label="Ajustes">⚙</button>
       </div>
     </div>
+    <div class="blocos" id="blocos"></div>
     <div class="weeks" id="weeks"></div>
     <div class="days" id="days"></div>
   </header>
@@ -687,14 +698,17 @@ try{ if(sessionStorage.getItem("taf-aberto")) document.documentElement.className
 "use strict";
 
 /* ============================================================
-   PLANILHA: TAF SEMANAS 1 A 4 — BASE
-   Cada bloco traz as 4 semanas. `s` = nº de séries, `r` = descanso
-   em segundos, `rt` = descanso conforme a planilha (texto).
+   O treino vem em BLOCOS de 4 semanas, um por planilha do professor.
+   Os dois blocos têm os mesmos cinco dias, mas exercícios próprios —
+   por isso são dois arrays, e não um array de 8 posições.
+   Dentro de um bloco, `sem` sempre tem 4 posições. `s` = nº de séries,
+   `r` = descanso em segundos, `rt` = descanso conforme a planilha.
    ============================================================ */
 var eq = function(o){ return [o,o,o,o]; };
 var pair = function(a,b){ return [a,a,b,b]; };
 
-var PLAN = [
+/* PLANILHA: TAF SEMANAS 1 A 4 — BASE */
+var PLANO_A = [
 { id:"a1", dia:"Dia 1", nome:"Academia 1", foco:"Inferior · potência · tornozelos", kind:"Academia",
   blocos:[
     { id:"b1", t:"Tornozelos", sem: eq({ s:3, r:60,
@@ -808,6 +822,146 @@ var PLAN = [
   ]}
 ];
 
+/* PLANILHA: TAF SEMANAS 5 A 8 — GANHO DE POTÊNCIA E FORÇA.
+   As 4 posições de `sem` aqui são as semanas 5, 6, 7 e 8; quem faz a
+   conversão é ws(). Os ids dos blocos começam com "c" justamente para
+   não se misturarem com os do bloco base no que já foi salvo. */
+var PLANO_B = [
+{ id:"a1", dia:"Dia 1", nome:"Academia 1", foco:"Inferior · potência · tornozelos", kind:"Academia",
+  blocos:[
+    { id:"c1", t:"Tornozelos + shuttle run", tipo:"Complexo", sem: eq({ s:3, r:60,
+        it:[{n:"Tornozelos", p:"10 repetições"},
+            {n:"Shuttle run", p:"sem quantidade na planilha"}] }),
+      nota:"A planilha traz “3x10 tornozelos + shuttle run” sem dizer quantos percursos de shuttle run entram em cada série — confirmar com o professor." },
+    { id:"c2", t:"Complexo de potência", tipo:"Complexo", sem:[
+        { s:4, r:120, it:[{n:"Agachamento livre",p:"15, 12, 10 e 8 reps — uma sequência por série",reg:{t:"kg"}},
+                          {n:"Agachamento búlgaro",p:"10 reps por perna",reg:{t:"kg"}},
+                          {n:"Sled push",p:"ida e volta",reg:{t:"kg"}},
+                          {n:"Assault bike",p:"30 s no máximo de calorias",reg:{t:"reps",lbl:"Calorias"}}] },
+        { s:4, r:120, it:[{n:"Agachamento livre",p:"12, 10, 8 e 6 reps — uma sequência por série",reg:{t:"kg"}},
+                          {n:"Agachamento búlgaro",p:"10 reps por perna",reg:{t:"kg"}},
+                          {n:"Sled push",p:"ida e volta",reg:{t:"kg"}},
+                          {n:"Assault bike",p:"30 s no máximo de calorias",reg:{t:"reps",lbl:"Calorias"}}] },
+        { s:4, r:120, it:[{n:"Agachamento livre",p:"10 reps",reg:{t:"kg"}},
+                          {n:"Agachamento búlgaro",p:"10 reps por perna",reg:{t:"kg"}},
+                          {n:"Sled push",p:"ida e volta",reg:{t:"kg"}},
+                          {n:"Assault bike",p:"30 s no máximo de calorias",reg:{t:"reps",lbl:"Calorias"}}] },
+        { s:4, r:120, it:[{n:"Agachamento livre",p:"8 reps",reg:{t:"kg"}},
+                          {n:"Agachamento búlgaro",p:"8 reps por perna",reg:{t:"kg"}},
+                          {n:"Sled push",p:"ida e volta",reg:{t:"kg"}},
+                          {n:"Assault bike",p:"30 s no máximo de calorias",reg:{t:"reps",lbl:"Calorias"}}] }
+      ]},
+    { id:"c3", t:"Posterior e core", tipo:"Complexo", sem: eq({ s:4, r:90,
+        it:[{n:"Flexora deitada",p:"10 reps",reg:{t:"kg"}},
+            {n:"Rolinho abdominal",p:"10 reps"}] }) }
+  ]},
+
+{ id:"e1", dia:"Dia 2", nome:"Extra 1", foco:"Abdômen · corrida", kind:"Extra",
+  blocos:[
+    { id:"c1", t:"Abdominal remador", sem: pair(
+        { s:4, r:60, rt:"1:00 entre as séries", it:[{n:"Abdominal remador",p:"35 reps em velocidade"}] },
+        { s:5, r:80, rt:"1:20 entre as séries", it:[{n:"Abdominal remador",p:"40 reps em velocidade"}] }
+      )},
+    { id:"c2", t:"Core", tipo:"Complexo", sem: pair(
+        { s:3, r:90, it:[{n:"Abdominal remador lento",p:"25 reps"},
+                         {n:"Prancha",p:"1:00",reg:{t:"seg"}},
+                         {n:"Hollow hold",p:"30 s",reg:{t:"seg"}}] },
+        { s:3, r:90, it:[{n:"Abdominal remador lento",p:"30 reps"},
+                         {n:"Prancha com braços estendidos",p:"1:00",reg:{t:"seg"}},
+                         {n:"Hollow hold",p:"35 s",reg:{t:"seg"}}] }
+      )},
+    { id:"c3", t:"Corrida", tipo:"Tiros", sem:[
+        { s:6, r:60, rt:"1:00 a 2:00 entre os tiros", it:[{n:"400 m",p:"ritmo moderado",reg:{t:"tempo"}}] },
+        { s:6, r:60, rt:"1:00 a 2:00 entre os tiros", it:[{n:"400 m",p:"ritmo um pouco mais forte",reg:{t:"tempo"}}] },
+        { s:5, r:90, rt:"1:30 a 2:30 entre os tiros", it:[{n:"600 m",p:"ritmo moderado",reg:{t:"tempo"}}] },
+        { s:5, r:90, rt:"1:30 a 2:30 entre os tiros", it:[{n:"600 m",p:"ritmo um pouco mais forte",reg:{t:"tempo"}}] }
+      ]}
+  ]},
+
+{ id:"a2", dia:"Dia 3", nome:"Academia 2", foco:"Superior · corda · barra", kind:"Academia",
+  blocos:[
+    { id:"c1", t:"Pull-up escapular", sem: eq({ s:3, r:60,
+        it:[{n:"Pull-up escapular",p:"5 a 7 reps"}] }) },
+    { id:"c2", t:"Aquecimento de ombros", tipo:"Complexo", sem: eq({ s:2, r:60,
+        it:[{n:"Elevação lateral",p:"10 reps"},{n:"Elevação frontal",p:"10 reps"},
+            {n:"Desenvolvimento (press)",p:"10 reps"},{n:"Posterior de ombro",p:"10 reps"}] }) },
+    { id:"c3", t:"Barra fixa", sem: eq({ s:3, r:120,
+        it:[{n:"Barra fixa — máximo de repetições",p:"Homens: máximo de reps, elástico se necessário. Mulheres: isometria, elástico após a falha.",reg:{t:"reps"}}] }) },
+    { id:"c4", t:"EMOM 14", tipo:"EMOM", sem: eq({ s:14, r:60, ritmo:"A cada minuto · 14 rodadas",
+        it:[{n:"Prática de subida de corda",p:"A — alterna com o shuttle run a cada minuto"},
+            {n:"Shuttle run",p:"B — alterna com a corda a cada minuto"}] }),
+      nota:"A planilha traz “EMOM 14 · A: subida de corda / B: shuttle run”, sem dizer quantas subidas nem quantos percursos por minuto — confirmar com o professor." },
+    { id:"c5", t:"Puxada e flexão", tipo:"Complexo", sem: eq({ s:3, r:90,
+        it:[{n:"Remada na argola com pés elevados + isometria",p:"10 reps + 10 a 15 s de isometria"},
+            {n:"Flexão de braço",p:"máximo de repetições",reg:{t:"reps"}}] }) },
+    { id:"c6", t:"Costas, peito e pegada", tipo:"Complexo", sem: eq({ s:3, r:120,
+        it:[{n:"Serrote",p:"10 reps com 2 s de negativa",reg:{t:"kg"}},
+            {n:"Supino alternado com halteres",p:"10 reps com pausa em cima",reg:{t:"kg"}},
+            {n:"Farmer carry",p:"30 a 45 s, pesado",reg:{t:"kg"}},
+            {n:"Tempo máximo pendurado na barra",p:"pegada aberta, até a falha",reg:{t:"seg"}}] }) }
+  ]},
+
+{ id:"e2", dia:"Dia 4", nome:"Extra 2", foco:"Abdômen · corrida", kind:"Extra",
+  blocos:[
+    { id:"c1", t:"EMOM 8", tipo:"EMOM", sem: pair(
+        { s:8, r:60, ritmo:"A cada minuto · 8 rodadas", it:[{n:"Abdominal remador",p:"20 reps por minuto"}] },
+        { s:8, r:60, ritmo:"A cada minuto · 8 rodadas", it:[{n:"Abdominal remador",p:"22 a 25 reps por minuto"}] }
+      )},
+    { id:"c2", t:"Esforço máximo", sem: pair(
+        { s:4, r:90, it:[{n:"Esforço máximo",p:"30 segundos",reg:{t:"reps",lbl:"marca"}}] },
+        { s:4, r:90, it:[{n:"Esforço máximo",p:"35 segundos",reg:{t:"reps",lbl:"marca"}}] }
+      ), nota:"A planilha continua sem dizer em que aparelho é este bloco — confirmar com o professor." },
+    { id:"c3", t:"Core", tipo:"Complexo", sem: pair(
+        { s:3, r:90, it:[{n:"Dragon flag",p:"máximo de repetições",reg:{t:"reps"}},{n:"Star plank",p:"20 s de cada lado"}] },
+        { s:3, r:90, it:[{n:"Dragon flag",p:"máximo de repetições",reg:{t:"reps"}},{n:"Star plank",p:"25 s de cada lado"}] }
+      )},
+    { id:"c4", t:"Corrida", tipo:"Tiros", sem:[
+        { s:4, r:60, rt:"1:00 a 2:00 entre os tiros", it:[{n:"600 m",p:"ritmo moderado a forte",reg:{t:"tempo"}}] },
+        { s:4, r:60, rt:"1:00 a 2:00 entre os tiros", it:[{n:"600 m",p:"ritmo forte",reg:{t:"tempo"}}] },
+        { s:4, r:90, rt:"1:30 a 2:30 entre os tiros", it:[{n:"800 m",p:"ritmo moderado a forte",reg:{t:"tempo"}}] },
+        { s:4, r:90, rt:"1:30 a 2:30 entre os tiros", it:[{n:"800 m",p:"ritmo forte",reg:{t:"tempo"}}] }
+      ]}
+  ]},
+
+{ id:"e3", dia:"Dia 5", nome:"Extra 3", foco:"Barra · remador · corrida", kind:"Extra",
+  blocos:[
+    { id:"c1", t:"Barra fixa negativa", sem: eq({ s:3, r:120,
+        it:[{n:"Barra fixa — máximo",p:"saltando e segurando a negativa",reg:{t:"reps"}}] }) },
+    { id:"c2", t:"Pendurado na barra", sem: eq({ s:3, r:120,
+        it:[{n:"Tempo máximo pendurado",p:"até a falha",reg:{t:"seg"}}] }) },
+    { id:"c3", t:"Remador", sem:[
+        { s:1, r:0, it:[{n:"Remador — 1:00",p:"80% do esforço",reg:{t:"m"}}] },
+        { s:1, r:0, it:[{n:"Remador — 1:00",p:"85% do esforço",reg:{t:"m"}}] },
+        { s:1, r:0, it:[{n:"Remador — 1:00",p:"percentual a confirmar",reg:{t:"m"}}] },
+        { s:1, r:0, it:[{n:"Remador — 1:00",p:"esforço máximo",reg:{t:"m"}}] }
+      ], nota:"Na planilha, a semana 7 deste bloco está escrita como “1:00 (0% esforço remador)” — o número parece ter ficado incompleto. Confirmar com o professor antes de fazer." },
+    { id:"c4", t:"Corrida contínua", sem:[
+        { s:1, r:0, it:[{n:"Corrida contínua",p:"15 minutos a 80% do esforço",reg:{t:"m"}}] },
+        { s:1, r:0, it:[{n:"Corrida contínua",p:"15 minutos — percentual a confirmar",reg:{t:"m"}}] },
+        { s:1, r:0, it:[{n:"Corrida contínua",p:"20 minutos a 80% do esforço",reg:{t:"m"}}] },
+        { s:1, r:0, it:[{n:"Corrida contínua",p:"20 minutos em esforço máximo",reg:{t:"m"}}] }
+      ], nota:"Na planilha, a semana 6 deste bloco está escrita como “15 minutos corrida (5% esforço)” — o número parece ter ficado incompleto. Confirmar com o professor antes de fazer." }
+  ]}
+];
+
+/* Os dois blocos, na ordem em que são feitos. `de` e `ate` são as semanas
+   contadas do começo de tudo — é o número que aparece no app e o que entra
+   nas chaves salvas ("w7|a1|c2|0"), então mexer nisso quebra o histórico. */
+var BLOCOS = [
+  { nome:"Bloco base",                curto:"Base",             de:1, ate:4, plano: PLANO_A },
+  { nome:"Ganho de potência e força", curto:"Potência e força", de:5, ate:8, plano: PLANO_B }
+];
+var NSEM = BLOCOS[BLOCOS.length-1].ate;
+
+function blocoDa(w){
+  for(var i=0;i<BLOCOS.length;i++) if(w>=BLOCOS[i].de && w<=BLOCOS[i].ate) return BLOCOS[i];
+  return BLOCOS[0];
+}
+/* plano da semana w */
+function pl(w){ return blocoDa(w).plano; }
+/* posição da semana w dentro do `sem` do bloco dela (0 a 3) */
+function ws(w){ return w - blocoDa(w).de; }
+
 /* Busca de vídeo por exercício. Não há link fixo: o ícone abre a busca
    pronta no YouTube, e o link que você salvar passa a ter prioridade.
    Corrida, sprint e bike ficam de fora — não precisam de tutorial. */
@@ -841,7 +995,15 @@ var VID = {
   "Tempo máximo pendurado":"dead hang pendurado na barra pegada",
   "Dragon flag":"dragon flag como fazer progressão",
   "Star plank":"star plank prancha lateral execução",
-  "Remador — 1:00":"técnica no remador ergômetro remo indoor"
+  "Remador — 1:00":"técnica no remador ergômetro remo indoor",
+  /* entraram com o bloco das semanas 5 a 8 */
+  "Agachamento livre":"agachamento livre técnica execução",
+  "Shuttle run":"shuttle run corrida de segmento técnica",
+  "Flexora deitada":"mesa flexora deitada execução correta",
+  "Rolinho abdominal":"roda abdominal ab wheel execução",
+  "Flexão de braço":"flexão de braço execução correta",
+  "Serrote":"remada serrote com halter execução",
+  "Supino alternado com halteres":"supino com halteres alternado execução"
 };
 
 /* Vídeo curado por exercício: id do YouTube + título e canal (crédito).
@@ -851,6 +1013,7 @@ var VIDEO = {
   "Abdominal remador": { id:"vsiv3AHrLeE", t:"Abdominal remador — demonstração", c:"Profe Welter", d:"0:12" },
   "Abdominal remador lento": { id:"vsiv3AHrLeE", t:"Abdominal remador — demonstração", c:"Profe Welter", d:"0:12" },
   "Agachamento": { id:"x6vHr2gplRE", t:"Agachamento livre — execução", c:"Academia Performance", d:"0:20" },
+  "Agachamento livre": { id:"x6vHr2gplRE", t:"Agachamento livre — execução", c:"Academia Performance", d:"0:20" },
   "Agachamento búlgaro": { id:"LT_nelifZ_k", t:"Agachamento búlgaro com halteres", c:"Luann Brasil", d:"0:11" },
   "Barra fixa — máximo": { id:"wWfJFHZQnqQ", t:"Barra fixa negativa (pegada pronada)", c:"PA Performance", d:"0:24" },
   "Barra fixa — máximo de repetições": { id:"ZdJuIIp8Bgg", t:"Barra fixa pronada (com elástico)", c:"Cleyton Nogueira", d:"0:09" },
@@ -936,19 +1099,17 @@ function save(){
   },160);
 }
 
-function sess(w,d){ return PLAN[d]; }
-function wIdx(){ return S.week-1; }
-function bs(bloco,w){ return bloco.sem[w-1]; }
-function kDone(w,d,b,i){ return "w"+w+"|"+PLAN[d].id+"|"+b+"|"+i; }
-function kLog(w,d,b,it,i){ return "w"+w+"|"+PLAN[d].id+"|"+b+"|"+it+"|"+i; }
-function kSess(w,d){ return "w"+w+"|"+PLAN[d].id; }
+function bs(bloco,w){ return bloco.sem[ws(w)]; }
+function kDone(w,d,b,i){ return "w"+w+"|"+pl(w)[d].id+"|"+b+"|"+i; }
+function kLog(w,d,b,it,i){ return "w"+w+"|"+pl(w)[d].id+"|"+b+"|"+it+"|"+i; }
+function kSess(w,d){ return "w"+w+"|"+pl(w)[d].id; }
 
 function totalSets(w,d){
-  return PLAN[d].blocos.reduce(function(a,b){ return a + bs(b,w).s; },0);
+  return pl(w)[d].blocos.reduce(function(a,b){ return a + bs(b,w).s; },0);
 }
 function doneSets(w,d){
   var n=0;
-  PLAN[d].blocos.forEach(function(b){
+  pl(w)[d].blocos.forEach(function(b){
     var q=bs(b,w).s;
     for(var i=0;i<q;i++) if(S.done[kDone(w,d,b.id,i)]) n++;
   });
@@ -956,7 +1117,7 @@ function doneSets(w,d){
 }
 function weekProgress(w){
   var t=0,f=0;
-  for(var d=0;d<PLAN.length;d++){ t+=totalSets(w,d); f+=doneSets(w,d); }
+  for(var d=0;d<pl(w).length;d++){ t+=totalSets(w,d); f+=doneSets(w,d); }
   return t? f/t : 0;
 }
 
@@ -1376,13 +1537,30 @@ setInterval(renderSessTime, 1000);
 /* ============================================================
    Render — cabeçalho
    ============================================================ */
+var blocosEl = document.getElementById("blocos");
 var weeksEl = document.getElementById("weeks");
 var daysEl  = document.getElementById("days");
 var viewEl  = document.getElementById("view");
 
 function renderHead(){
+  /* Seletor de bloco. Aparece só quando existe mais de um; é ele que decide
+     quais quatro semanas a fileira de baixo mostra. */
+  blocosEl.innerHTML = "";
+  blocosEl.style.display = BLOCOS.length > 1 ? "" : "none";
+  BLOCOS.forEach(function(bl){
+    var b = el('<button class="bl" aria-pressed="'+(bl===blocoDa(S.week))+'" '+
+      'title="'+esc(bl.nome)+'">'+esc(bl.curto)+' <span>'+bl.de+'–'+bl.ate+'</span></button>');
+    b.addEventListener("click", function(){
+      if(bl===blocoDa(S.week)) return;
+      S.week = bl.de;                       /* o dia continua o mesmo nos dois blocos */
+      save(); renderHead(); renderView(); window.scrollTo(0,0);
+    });
+    blocosEl.appendChild(b);
+  });
+
   weeksEl.innerHTML = "";
-  for(var w=1; w<=4; w++){
+  var blAtual = blocoDa(S.week);
+  for(var w=blAtual.de; w<=blAtual.ate; w++){
     (function(w){
       var p = Math.round(weekProgress(w)*100);
       var b = el('<button class="wk" aria-pressed="'+(S.week===w)+'">'+
@@ -1394,7 +1572,7 @@ function renderHead(){
   }
 
   daysEl.innerHTML = "";
-  PLAN.forEach(function(sx, d){
+  pl(S.week).forEach(function(sx, d){
     var tot = totalSets(S.week,d), fez = doneSets(S.week,d);
     var p = tot ? Math.round(fez/tot*100) : 0;
     var fin = !!S.sess[kSess(S.week,d)];
@@ -1408,10 +1586,10 @@ function renderHead(){
     daysEl.appendChild(b);
   });
 
-  var allDone = true;
-  for(var d2=0; d2<PLAN.length; d2++){ if(!S.sess[kSess(4,d2)]) { allDone=false; break; } }
+  var bl = blocoDa(S.week), fechou = true;
+  for(var d2=0; d2<pl(bl.ate).length; d2++){ if(!S.sess[kSess(bl.ate,d2)]) { fechou=false; break; } }
   document.getElementById("cycleLabel").textContent =
-    allDone ? "Bloco de 4 semanas concluído" : "Bloco base · semanas 1 a 4";
+    bl.curto + (fechou ? " · concluído" : " · " + bl.de + " a " + bl.ate);
 
   renderSessTime();
 }
@@ -1422,7 +1600,7 @@ function renderHead(){
 function renderView(){
   if(S.tab==="hist"){ renderHist(); return; }
   if(S.tab==="sim"){ renderSim(); return; }
-  var d = S.day, w = S.week, sx = PLAN[d];
+  var d = S.day, w = S.week, sx = pl(w)[d];
   var tot = totalSets(w,d), fez = doneSets(w,d);
   var pct = tot ? fez/tot : 0;
   var C = 2*Math.PI*22;
@@ -1613,13 +1791,18 @@ function renderView(){
   viewEl.appendChild(fb);
 
   /* fim do bloco */
-  if(w===4){
-    var all = PLAN.every(function(_,dd){ return !!S.sess[kSess(4,dd)]; });
+  var blFim = blocoDa(w);
+  if(w === blFim.ate){
+    var all = pl(w).every(function(_,dd){ return !!S.sess[kSess(w,dd)]; });
     if(all){
-      viewEl.appendChild(el('<div class="banner"><h3>Bloco de 4 semanas concluído</h3>'+
-        '<p>Você fechou as cinco sessões da semana 4. Este app cobre só as semanas 1 a 4 — '+
-        'peça as semanas seguintes ao seu professor para dar sequência. Antes disso, '+
-        'exporte um backup dos seus registros em Ajustes.</p></div>'));
+      var prox = BLOCOS[BLOCOS.indexOf(blFim)+1];
+      viewEl.appendChild(el('<div class="banner"><h3>'+esc(blFim.nome)+' concluído</h3>'+
+        '<p>Você fechou as cinco sessões da semana '+w+'. '+
+        (prox
+          ? 'O bloco seguinte — '+esc(prox.nome)+', semanas '+prox.de+' a '+prox.ate+' — já está aqui: '+
+            'toque no nome dele logo abaixo do título do app.'
+          : 'O app vai até a semana '+NSEM+' — peça as semanas seguintes ao seu professor para dar sequência.')+
+        ' Antes disso, exporte um backup dos seus registros em Ajustes.</p></div>'));
     }
   }
 }
@@ -1628,9 +1811,11 @@ function renderView(){
    antes desta que tenha registro, e devolve série por série (posição
    preservada) para virar o "fantasma" dentro de cada campo. */
 function prevSets(d, bid, ii, w, nome){
-  var b = PLAN[d].blocos.filter(function(x){ return x.id===bid; })[0];
-  if(!b) return null;
   for(var pw = w-1; pw >= 1; pw--){
+    /* o bloco é procurado semana a semana: em outro bloco de 4 semanas o
+       mesmo id pode nem existir, e aí a semana simplesmente é pulada */
+    var b = pl(pw)[d].blocos.filter(function(x){ return x.id===bid; })[0];
+    if(!b) continue;
     var cfg = bs(b, pw);
     if(!cfg.it[ii] || cfg.it[ii].n !== nome) continue;
     var vals=[], any=false;
@@ -1852,13 +2037,13 @@ function renderHist(){
   /* sessões concluídas */
   viewEl.appendChild(el('<div class="sec">Sessões concluídas</div>'));
   var any=false, list = el('<div></div>');
-  for(var w=1; w<=4; w++){
-    for(var d=0; d<PLAN.length; d++){
+  for(var w=1; w<=NSEM; w++){
+    for(var d=0; d<pl(w).length; d++){
       var r = S.sess[kSess(w,d)];
       if(!r) continue;
       any=true;
       list.appendChild(el('<div class="hcard"><div class="hrow">'+
-        '<div><div class="nm">'+esc(PLAN[d].nome)+'</div>'+
+        '<div><div class="nm">'+esc(pl(w)[d].nome)+'</div>'+
         '<div class="dt" style="margin-top:2px">Semana '+w+' · '+r.sets+'/'+r.tot+' séries'+
         (r.dur?' · '+fmtLongo(r.dur):'')+(r.rpe?' · '+esc(RPEL[r.rpe]):'')+'</div></div>'+
         '<div class="dt">'+esc(r.data)+'</div></div></div>'));
@@ -1869,38 +2054,35 @@ function renderHist(){
 
   /* evolução por exercício */
   viewEl.appendChild(el('<div class="sec">Evolução por exercício</div>'));
+  /* Cada exercício guarda em `semanas` só as semanas em que ele existe —
+     assim um exercício do bloco 2 não aparece com quatro colunas vazias
+     das semanas 1 a 4, em que ele nem estava na planilha. */
   var rows = [], seen = {};
-  PLAN.forEach(function(sx, d){
-    sx.blocos.forEach(function(b){
-      for(var w=1; w<=4; w++){
-        var cfg = bs(b,w);
-        cfg.it.forEach(function(it, ii){
-          if(!it.reg) return;
-          var key = sx.id+"|"+b.id+"|"+it.n;
-          if(seen[key]) return;
-          seen[key] = { sess:sx.nome, nome:it.n, tipo:it.reg.t, wk:["","","",""] };
-          rows.push(seen[key]);
+  for(var w=1; w<=NSEM; w++){
+    (function(w){
+      pl(w).forEach(function(sx, d){
+        sx.blocos.forEach(function(b){
+          var cfg = bs(b,w);
+          cfg.it.forEach(function(it, ii){
+            if(!it.reg) return;
+            var key = sx.id+"|"+b.id+"|"+it.n;
+            if(!seen[key]){
+              seen[key] = { sess:sx.nome, nome:it.n, tipo:it.reg.t, wk:{}, semanas:[] };
+              rows.push(seen[key]);
+            }
+            if(seen[key].semanas.indexOf(w) < 0) seen[key].semanas.push(w);
+            var vals=[];
+            for(var i=0;i<cfg.s;i++){
+              var v = S.logs[kLog(w,d,b.id,ii,i)];
+              if(v) vals.push(v);
+            }
+            if(vals.length) seen[key].wk[w] = vals.join(" ");
+          });
         });
-      }
-    });
-    sx.blocos.forEach(function(b){
-      for(var w=1; w<=4; w++){
-        var cfg = bs(b,w);
-        cfg.it.forEach(function(it, ii){
-          if(!it.reg) return;
-          var key = sx.id+"|"+b.id+"|"+it.n;
-          if(!seen[key]) return;
-          var vals=[];
-          for(var i=0;i<cfg.s;i++){
-            var v = S.logs[kLog(w,d,b.id,ii,i)];
-            if(v) vals.push(v);
-          }
-          if(vals.length) seen[key].wk[w-1] = vals.join(" ");
-        });
-      }
-    });
-  });
-  var comDados = rows.filter(function(r){ return r.wk.some(function(v){ return v; }); });
+      });
+    })(w);
+  }
+  var comDados = rows.filter(function(r){ return Object.keys(r.wk).length > 0; });
   if(!comDados.length){
     viewEl.appendChild(el('<div class="empty-state">Assim que você registrar cargas, tempos ou repetições, a comparação entre as semanas aparece aqui.</div>'));
   } else {
@@ -1910,11 +2092,11 @@ function renderHist(){
       var card = el('<div class="hcard"><div class="hrow"><div class="nm">'+esc(sname)+'</div></div></div>');
       byS[sname].forEach(function(r){
         var g = '<div style="margin-top:11px"><div class="dt" style="color:var(--ink);font-family:var(--f-body);font-weight:600">'+esc(r.nome)+'</div><div class="grid4">';
-        for(var i=0;i<4;i++){
-          var v = r.wk[i];
-          g += '<div class="cell'+(v?"":" empty")+'"><div class="w">S'+(i+1)+'</div>'+
+        r.semanas.forEach(function(w){
+          var v = r.wk[w];
+          g += '<div class="cell'+(v?"":" empty")+'"><div class="w">S'+w+'</div>'+
                '<div class="v">'+(v?esc(v):"—")+'</div></div>';
-        }
+        });
         g += '</div></div>';
         card.appendChild(el(g));
       });
@@ -1924,10 +2106,10 @@ function renderHist(){
 
   /* anotações */
   var notas = [];
-  for(var w2=1; w2<=4; w2++){
-    for(var d2=0; d2<PLAN.length; d2++){
+  for(var w2=1; w2<=NSEM; w2++){
+    for(var d2=0; d2<pl(w2).length; d2++){
       var t = S.notas[kSess(w2,d2)];
-      if(t) notas.push({ w:w2, nome:PLAN[d2].nome, t:t });
+      if(t) notas.push({ w:w2, nome:pl(w2)[d2].nome, t:t });
     }
   }
   if(notas.length){
@@ -2313,8 +2495,8 @@ document.getElementById("btnImport").addEventListener("click", function(){
 });
 document.getElementById("btnResetSession").addEventListener("click", function(){
   var w=S.week, d=S.day;
-  if(!confirm("Zerar as séries e registros de "+PLAN[d].nome+" na semana "+w+"?")) return;
-  PLAN[d].blocos.forEach(function(b){
+  if(!confirm("Zerar as séries e registros de "+pl(w)[d].nome+" na semana "+w+"?")) return;
+  pl(w)[d].blocos.forEach(function(b){
     var cfg = bs(b,w);
     for(var i=0;i<cfg.s;i++){
       delete S.done[kDone(w,d,b.id,i)];
@@ -2446,8 +2628,8 @@ if("serviceWorker" in navigator){
    Início
    ============================================================ */
 load();
-if(S.week<1||S.week>4) S.week=1;
-if(S.day<0||S.day>=PLAN.length) S.day=0;
+if(S.week<1||S.week>NSEM) S.week=1;
+if(S.day<0||S.day>=pl(S.week).length) S.day=0;
 if(["treino","sim","hist"].indexOf(S.tab)<0) S.tab="treino";
 tafInit();
 applyTheme(); syncCfgUI(); renderCapa();

@@ -9,11 +9,19 @@ usuário, não suposição.
 
 ## Origem dos dados
 
-Planilha `TAF SEMANAS 1A4.xlsx`, aba `Plan1`, em `C:\Users\User\Documents\Treino\`
-(fora do repositório — é documento pessoal, não subir). Estrutura dela: coluna A
-tem os dias, e as semanas 1 a 4 ocupam as colunas C, G, K e O.
+Planilhas do professor em `C:\Users\Matheus\Documents\Treino\`, aba `Plan1`
+(fora do repositório — são documento pessoal, não subir):
 
-Cinco sessões por semana:
+| Planilha | Vira | Nome no app |
+|---|---|---|
+| `TAF SEMANAS 1A4.xlsx` | semanas 1 a 4 | Bloco base |
+| `TAF SEMANAS 5A8.xlsx` | semanas 5 a 8 | Ganho de potência e força |
+
+Estrutura das duas: coluna A tem os dias, e as quatro semanas daquela planilha
+ocupam as colunas C, G, K e O. Atenção: a planilha 5A8 chama as colunas dela de
+"SEMANA 1" a "SEMANA 4" — são as semanas **5 a 8** na contagem do app.
+
+Cinco sessões por semana, iguais nos dois blocos:
 
 | Dia | Sessão | Foco |
 |---|---|---|
@@ -23,9 +31,26 @@ Cinco sessões por semana:
 | 4 | Extra 2 | Abdômen e corrida |
 | 5 | Extra 3 | Barra, remador, corrida |
 
-O bloco cobre **apenas as semanas 1 a 4** — decisão do usuário. Ao terminar as
-cinco sessões da semana 4, o app mostra um aviso de fim de bloco em vez de
-reiniciar o ciclo. Semanas 5 em diante só entram quando o professor passar.
+O app cobre **as semanas 1 a 8**. Ao fechar as cinco sessões da última semana de
+um bloco aparece um aviso: no fim do bloco 1 ele aponta para o bloco 2; no fim do
+bloco 2 ele pede as semanas seguintes ao professor. Nunca reinicia o ciclo
+sozinho.
+
+### O que ficou pendente com o professor
+
+Estas ficaram transcritas como estão na planilha, sem completar:
+
+- **Semanas 5 a 8, Dia 1:** "3x10 tornozelos + shuttle run" não diz quantos
+  percursos de shuttle run entram em cada série.
+- **Semanas 5 a 8, Dia 3:** o EMOM 14 traz "A: subida de corda / B: shuttle run"
+  sem quantidade por minuto.
+- **Semanas 5 a 8, Dia 4:** o bloco de "4x30s esforço máximo" continua sem
+  aparelho definido (é a mesma pendência das semanas 1 a 4).
+- **Semanas 5 a 8, Dia 5:** duas células parecem ter perdido um dígito — a
+  semana 7 do remador está como "1:00 (0% esforço remador)" e a semana 6 da
+  corrida como "15 minutos corrida (5% esforço)". Ficaram no app como
+  "percentual a confirmar". **Não chute o número**: 90% e 85% seriam palpites
+  pela progressão das outras semanas, e palpite de carga não entra aqui.
 
 ## Arquivos
 
@@ -47,10 +72,45 @@ fluxo completo.
 Tudo em um arquivo só, nesta ordem: `<style>` com os tokens e componentes, o
 HTML da casca, e um `<script>` com uma IIFE contendo dados, estado e render.
 
-### Dados do treino — `PLAN`
+### Dados do treino — `PLANO_A`, `PLANO_B` e `BLOCOS`
 
-Array de 5 sessões. Cada sessão tem `blocos`, e cada bloco tem `sem`: um array
-de **exatamente 4 posições**, uma por semana.
+Cada planilha vira um array de 5 sessões: `PLANO_A` (semanas 1 a 4) e `PLANO_B`
+(semanas 5 a 8). São dois arrays e não um de 8 posições porque os exercícios
+mudam de um bloco para o outro — só os cinco dias é que se repetem.
+
+`BLOCOS` amarra os dois e diz de que semana até que semana cada um vale:
+
+```js
+var BLOCOS = [
+  { nome:"Bloco base", curto:"Base", de:1, ate:4, plano: PLANO_A },
+  { nome:"Ganho de potência e força", curto:"Potência e força", de:5, ate:8, plano: PLANO_B }
+];
+```
+
+Daí saem três funções que o resto do código usa no lugar do antigo `PLAN`:
+
+| Função | Devolve |
+|---|---|
+| `pl(w)` | o array de sessões da semana `w` |
+| `ws(w)` | a posição de `w` dentro do `sem` do bloco dela (0 a 3) |
+| `blocoDa(w)` | o registro de `BLOCOS` a que a semana pertence |
+
+`NSEM` é a última semana existente (hoje, 8). **Qualquer laço por semana vai de
+1 a `NSEM` e busca o plano com `pl(w)` — nunca com um array fixo.** Um `pl(w)[d]`
+com o `w` errado devolve a sessão do outro bloco em silêncio, sem erro nenhum.
+
+Acrescentar um bloco novo é: mais um `PLANO_*`, mais uma linha em `BLOCOS`. O
+resto se ajusta sozinho, inclusive o seletor no cabeçalho.
+
+**Ids dos blocos:** `PLANO_A` usa `b1, b2…` e `PLANO_B` usa `c1, c2…`. É de
+propósito — o id entra na chave salva (`w7|a1|c2|0`), e ids repetidos entre
+blocos diferentes fariam o app casar exercícios que não têm nada a ver. O preço
+é que o "fantasma" da última vez (`prevSets`) não atravessa a virada de bloco:
+na semana 5 nenhum exercício mostra a carga da semana 4, porque nenhum id
+coincide.
+
+Dentro de um bloco, cada `bloco` tem `sem`: um array de **exatamente 4
+posições**, uma por semana daquele bloco.
 
 ```js
 { id:"b2", t:"Agachamento búlgaro", tipo:"Complexo", nota:"…", sem:[ cfgS1, cfgS2, cfgS3, cfgS4 ] }
@@ -66,9 +126,9 @@ Cada `cfg` de semana:
 | `ritmo` | Só para EMOM — substitui a etiqueta de descanso e troca "séries" por "rodadas" |
 | `it` | Exercícios: `{ n:nome, p:prescrição, reg:{t:tipo} }` |
 
-Helpers: `eq(x)` repete a mesma config nas 4 semanas, `pair(a,b)` faz
-semanas 1-2 com `a` e 3-4 com `b`. A maior parte da progressão da planilha é
-1-2 igual e 3-4 igual, daí o `pair`.
+Helpers: `eq(x)` repete a mesma config nas 4 semanas do bloco, `pair(a,b)` faz
+as duas primeiras com `a` e as duas últimas com `b`. A maior parte da progressão
+da planilha é assim, daí o `pair`.
 
 **Distinção que importa:** `rt` é o que a planilha manda e aparece com a
 etiqueta "Descanso" destacada; quando o bloco não tem `rt`, o `r` é sugestão
@@ -119,6 +179,8 @@ sai de `passou()`, que devolve `null` quando não há meta.
 
 Chave `taf-pcpr-v1`. Campos persistidos listados em `FIELDS`; `snapshot()` monta
 o objeto exportado. Formato das chaves:
+
+A `{semana}` é sempre a contagem de 1 a 8 — não a numeração da planilha.
 
 ```
 done  →  "w{semana}|{idSessao}|{idBloco}|{indiceSerie}"
