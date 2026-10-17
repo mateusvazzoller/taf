@@ -129,13 +129,15 @@ try{ if(sessionStorage.getItem("taf-aberto")) document.documentElement.className
   .wk[aria-pressed="true"] .bar i{background:var(--accent-ink)}
 
   /* Seletor de bloco. Fica acima das semanas porque é ele que decide quais
-     quatro semanas aparecem ali — sem isso seriam oito botões espremidos. */
-  .blocos{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding-bottom:7px}
+     quatro semanas aparecem ali — sem isso seriam doze botões espremidos.
+     Os botões mostram as semanas, não o nome: dois blocos da planilha têm
+     o mesmo título ("Ganho de potência e força"). */
+  .blocos{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:6px;padding-bottom:7px}
   .bl{border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink-3);
       min-height:31px;padding:5px 7px;display:flex;align-items:center;justify-content:center;gap:5px;
       font-size:10px;letter-spacing:.09em;text-transform:uppercase;font-weight:600;line-height:1.15;
       text-align:center;transition:background .12s,border-color .12s,color .12s}
-  .bl span{font-family:var(--f-mono);letter-spacing:0;opacity:.75;flex:0 0 auto}
+  .bl span{font-family:var(--f-mono);letter-spacing:0;flex:0 0 auto}
   .bl[aria-pressed="true"]{background:var(--surface-2);border-color:var(--ink-3);color:var(--ink)}
 
   .days{display:flex;gap:6px;overflow-x:auto;padding:0 0 11px;scrollbar-width:none;
@@ -699,8 +701,8 @@ try{ if(sessionStorage.getItem("taf-aberto")) document.documentElement.className
 
 /* ============================================================
    O treino vem em BLOCOS de 4 semanas, um por planilha do professor.
-   Os dois blocos têm os mesmos cinco dias, mas exercícios próprios —
-   por isso são dois arrays, e não um array de 8 posições.
+   Todos os blocos têm os mesmos cinco dias, mas exercícios próprios —
+   por isso é um array por bloco, e não um array comprido de semanas.
    Dentro de um bloco, `sem` sempre tem 4 posições. `s` = nº de séries,
    `r` = descanso em segundos, `rt` = descanso conforme a planilha.
    ============================================================ */
@@ -944,12 +946,112 @@ var PLANO_B = [
   ]}
 ];
 
-/* Os dois blocos, na ordem em que são feitos. `de` e `ate` são as semanas
+/* PLANILHA: TAF SEMANAS 9 A 12 — GANHO DE POTÊNCIA E FORÇA.
+   A planilha usa o mesmo título da 5 a 8; no app as duas se distinguem
+   pelas semanas. As 4 posições de `sem` aqui são as semanas 9 a 12, e os
+   ids dos blocos começam com "d" pelo mesmo motivo dos "c" do PLANO_B. */
+var PLANO_C = [
+{ id:"a1", dia:"Dia 1", nome:"Academia 1", foco:"Inferior · potência · tornozelos", kind:"Academia",
+  blocos:[
+    { id:"d1", t:"Stiff + goblet squat", tipo:"Complexo", sem: eq({ s:3, r:60,
+        it:[{n:"Stiff unilateral",p:"10 reps",reg:{t:"kg"}},
+            {n:"Goblet squat com tornozelos elevados",p:"10 reps",reg:{t:"kg"}}] }) },
+    { id:"d2", t:"Complexo de potência", tipo:"Complexo", sem: eq({ s:4, r:120,
+        it:[{n:"Agachamento livre",p:"10, 8, 6 e 4 reps — uma sequência por série · 3 s descendo, 1 s de pausa, subida explosiva",reg:{t:"kg"}},
+            {n:"Afundo caminhando",p:"20 reps"},
+            {n:"Assault bike",p:"1:00",reg:{t:"reps",lbl:"Calorias"}}] }) },
+    { id:"d3", t:"Posterior, salto e core", tipo:"Complexo", sem: eq({ s:4, r:90,
+        it:[{n:"Flexora deitada",p:"10 reps",reg:{t:"kg"}},
+            {n:"Salto na caixa",p:"10 saltos"},
+            {n:"Prancha com braços estendidos",p:"1:00",reg:{t:"seg"}}] }) }
+  ]},
+
+{ id:"e1", dia:"Dia 2", nome:"Extra 1", foco:"Abdômen · corrida", kind:"Extra",
+  blocos:[
+    { id:"d1", t:"Abdominal remador", sem: eq({ s:4, r:90, rt:"1:30 entre as séries",
+        it:[{n:"Abdominal remador",p:"40 reps em velocidade"}] }) },
+    { id:"d2", t:"Core", tipo:"Complexo", sem: eq({ s:3, r:90,
+        it:[{n:"Abdominal remador lento",p:"25 reps"},
+            {n:"Prancha lateral",p:"30 s de cada lado"},
+            {n:"Hollow hold",p:"30 s",reg:{t:"seg"}}] }) },
+    { id:"d3", t:"Corrida", tipo:"Tiros", sem:[
+        { s:6, r:60, rt:"1:00 a 2:00 entre os tiros", it:[{n:"400 m",p:"ritmo moderado",reg:{t:"tempo"}}] },
+        { s:4, r:60, rt:"1:00 a 2:00 entre os tiros", it:[{n:"400 m",p:"ritmo um pouco mais forte",reg:{t:"tempo"}}] },
+        { s:5, r:90, rt:"1:30 a 2:30 entre os tiros", it:[{n:"600 m",p:"ritmo moderado",reg:{t:"tempo"}}] },
+        { s:5, r:90, rt:"1:30 a 2:30 entre os tiros", it:[{n:"600 m",p:"ritmo um pouco mais forte",reg:{t:"tempo"}}] }
+      ]}
+  ]},
+
+{ id:"a2", dia:"Dia 3", nome:"Academia 2", foco:"Superior · corda · barra", kind:"Academia",
+  blocos:[
+    { id:"d1", t:"Pull-up escapular", sem: eq({ s:3, r:60,
+        it:[{n:"Pull-up escapular",p:"5 a 7 reps"}] }) },
+    { id:"d2", t:"Aquecimento de ombros", tipo:"Complexo", sem: eq({ s:3, r:60,
+        it:[{n:"Giro de anilha nos ombros",p:"5 para cada lado"},
+            {n:"Shoulder tap em prancha",p:"20 toques"}] }),
+      nota:"Na planilha, o \u201c3x\u201d está na linha dos giros de anilha; os shoulder taps entraram nas mesmas 3 séries — confirmar com o professor se é isso." },
+    { id:"d3", t:"Barra fixa", sem: eq({ s:4, r:120,
+        it:[{n:"Barra fixa — máximo de repetições",p:"Homens: máximo de reps, elástico se necessário. Mulheres: isometria, elástico após a falha.",reg:{t:"reps"}}] }) },
+    { id:"d4", t:"EMOM 15", tipo:"EMOM", sem: eq({ s:15, r:60, ritmo:"A cada minuto · 15 rodadas",
+        it:[{n:"Prática de subida de corda",p:"A — revezando A, B e C a cada minuto"},
+            {n:"Isometria de abdômen na paralela",p:"B — 30 s"},
+            {n:"Shuttle run + 10 flexões",p:"C — shuttle run seguido de 10 flexões"}] }),
+      nota:"A planilha traz \u201cEMOM 15 · A: subida de corda / B: 30 isometria abdômen paralela / C: shuttle run + 10 flexões\u201d, sem dizer quantas subidas (A) nem quantos percursos de shuttle run (C) por minuto — confirmar com o professor." },
+    { id:"d5", t:"Costas, peito e pegada", tipo:"Complexo", sem: eq({ s:3, r:120,
+        it:[{n:"Puxada na argola com pés elevados + isometria",p:"10 reps + 10 s de isometria"},
+            {n:"Supino inclinado com halteres",p:"10 reps",reg:{t:"kg"}},
+            {n:"Farmer carry",p:"1:00, pesado",reg:{t:"kg"}},
+            {n:"Remada V no banco inclinado",p:"10 reps",reg:{t:"kg"}}] }) }
+  ]},
+
+{ id:"e2", dia:"Dia 4", nome:"Extra 2", foco:"Abdômen · corrida", kind:"Extra",
+  blocos:[
+    { id:"d1", t:"EMOM 8", tipo:"EMOM", sem: pair(
+        { s:8, r:60, ritmo:"A cada minuto · 8 rodadas", it:[{n:"Abdominal remador",p:"20 reps por minuto"}] },
+        { s:8, r:60, ritmo:"A cada minuto · 8 rodadas", it:[{n:"Abdominal remador",p:"22 a 25 reps por minuto"}] }
+      )},
+    { id:"d2", t:"Esforço máximo", sem: pair(
+        { s:4, r:90, it:[{n:"Esforço máximo",p:"30 segundos",reg:{t:"reps",lbl:"marca"}}] },
+        { s:4, r:90, it:[{n:"Esforço máximo",p:"35 segundos",reg:{t:"reps",lbl:"marca"}}] }
+      ), nota:"A planilha continua sem dizer em que aparelho é este bloco — confirmar com o professor." },
+    { id:"d3", t:"Core", tipo:"Complexo", sem: pair(
+        { s:3, r:90, it:[{n:"Dragon flag",p:"máximo de repetições",reg:{t:"reps"}},{n:"Star plank",p:"20 s de cada lado"}] },
+        { s:3, r:90, it:[{n:"Dragon flag",p:"máximo de repetições",reg:{t:"reps"}},{n:"Star plank",p:"25 s de cada lado"}] }
+      )},
+    { id:"d4", t:"Corrida", tipo:"Tiros", sem:[
+        { s:3, r:180, rt:"3:00 entre os tiros", it:[{n:"800 m",p:"ritmo moderado a forte",reg:{t:"tempo"}}] },
+        { s:3, r:180, rt:"3:00 entre os tiros", it:[{n:"800 m",p:"ritmo forte",reg:{t:"tempo"}}] },
+        { s:3, r:180, rt:"3:00 entre os tiros", it:[{n:"1.000 m",p:"ritmo moderado a forte",reg:{t:"tempo"}}] },
+        { s:3, r:180, rt:"3:00 entre os tiros", it:[{n:"1.000 m",p:"ritmo forte",reg:{t:"tempo"}}] }
+      ]}
+  ]},
+
+{ id:"e3", dia:"Dia 5", nome:"Extra 3", foco:"Barra · remador · corrida", kind:"Extra",
+  blocos:[
+    { id:"d1", t:"Barra fixa negativa", sem: eq({ s:3, r:120,
+        it:[{n:"Barra fixa — máximo",p:"saltando e segurando a negativa · mulheres: isometria",reg:{t:"reps"}}] }) },
+    { id:"d2", t:"Remador", sem:[
+        { s:1, r:0, it:[{n:"Remador — 1:00",p:"80% do esforço",reg:{t:"m"}}] },
+        { s:1, r:0, it:[{n:"Remador — 1:00",p:"85% do esforço",reg:{t:"m"}}] },
+        { s:1, r:0, it:[{n:"Remador — 1:00",p:"90% do esforço",reg:{t:"m"}}] },
+        { s:1, r:0, it:[{n:"Remador — 1:00",p:"esforço máximo",reg:{t:"m"}}] }
+      ]},
+    { id:"d3", t:"Corrida", sem:[
+        { s:1, r:0, it:[{n:"Corrida contínua",p:"20 minutos a 80% do esforço",reg:{t:"m"}}] },
+        { s:1, r:0, it:[{n:"Corrida contínua",p:"20 minutos a 85% do esforço",reg:{t:"m"}}] },
+        { s:1, r:0, it:[{n:"Corrida contínua",p:"20 minutos a 90% do esforço",reg:{t:"m"}}] },
+        { s:1, r:0, it:[{n:"Teste de corrida",p:"formato a confirmar com o professor",reg:{t:"m"}}] }
+      ], nota:"Na semana 12 a planilha traz só \u201cTESTE CORRIDA\u201d, sem dizer o formato. Se for o teste de 12 minutos do TAF, a aba Simulado tem o cronômetro pronto — mas confirme com o professor." }
+  ]}
+];
+
+/* Os blocos, na ordem em que são feitos. `de` e `ate` são as semanas
    contadas do começo de tudo — é o número que aparece no app e o que entra
    nas chaves salvas ("w7|a1|c2|0"), então mexer nisso quebra o histórico. */
 var BLOCOS = [
   { nome:"Bloco base",                curto:"Base",             de:1, ate:4, plano: PLANO_A },
-  { nome:"Ganho de potência e força", curto:"Potência e força", de:5, ate:8, plano: PLANO_B }
+  { nome:"Ganho de potência e força", curto:"Potência e força", de:5, ate:8, plano: PLANO_B },
+  { nome:"Ganho de potência e força", curto:"Potência e força", de:9, ate:12, plano: PLANO_C }
 ];
 var NSEM = BLOCOS[BLOCOS.length-1].ate;
 
@@ -1003,7 +1105,18 @@ var VID = {
   "Rolinho abdominal":"roda abdominal ab wheel execução",
   "Flexão de braço":"flexão de braço execução correta",
   "Serrote":"remada serrote com halter execução",
-  "Supino alternado com halteres":"supino com halteres alternado execução"
+  "Supino alternado com halteres":"supino com halteres alternado execução",
+  /* entraram com o bloco das semanas 9 a 12 */
+  "Stiff unilateral":"stiff unilateral com halter execução",
+  "Goblet squat com tornozelos elevados":"goblet squat calcanhar elevado execução",
+  "Afundo caminhando":"afundo caminhando walking lunge execução",
+  "Prancha lateral":"prancha lateral execução correta",
+  "Giro de anilha nos ombros":"plate halo giro de anilha ombro",
+  "Shoulder tap em prancha":"shoulder tap prancha execução",
+  "Isometria de abdômen na paralela":"l-sit paralela isometria abdômen",
+  "Puxada na argola com pés elevados + isometria":"remada na argola pés elevados execução",
+  "Supino inclinado com halteres":"supino inclinado com halteres execução",
+  "Remada V no banco inclinado":"remada no banco inclinado apoiado execução"
 };
 
 /* Vídeo curado por exercício: id do YouTube + título e canal (crédito).
@@ -1549,7 +1662,7 @@ function renderHead(){
   blocosEl.style.display = BLOCOS.length > 1 ? "" : "none";
   BLOCOS.forEach(function(bl){
     var b = el('<button class="bl" aria-pressed="'+(bl===blocoDa(S.week))+'" '+
-      'title="'+esc(bl.nome)+'">'+esc(bl.curto)+' <span>'+bl.de+'–'+bl.ate+'</span></button>');
+      'title="'+esc(bl.nome)+'">Semanas <span>'+bl.de+'–'+bl.ate+'</span></button>');
     b.addEventListener("click", function(){
       if(bl===blocoDa(S.week)) return;
       S.week = bl.de;                       /* o dia continua o mesmo nos dois blocos */
@@ -1589,7 +1702,7 @@ function renderHead(){
   var bl = blocoDa(S.week), fechou = true;
   for(var d2=0; d2<pl(bl.ate).length; d2++){ if(!S.sess[kSess(bl.ate,d2)]) { fechou=false; break; } }
   document.getElementById("cycleLabel").textContent =
-    bl.curto + (fechou ? " · concluído" : " · " + bl.de + " a " + bl.ate);
+    bl.curto + " · " + bl.de + " a " + bl.ate + (fechou ? " · concluído" : "");
 
   renderSessTime();
 }
@@ -1796,11 +1909,11 @@ function renderView(){
     var all = pl(w).every(function(_,dd){ return !!S.sess[kSess(w,dd)]; });
     if(all){
       var prox = BLOCOS[BLOCOS.indexOf(blFim)+1];
-      viewEl.appendChild(el('<div class="banner"><h3>'+esc(blFim.nome)+' concluído</h3>'+
+      viewEl.appendChild(el('<div class="banner"><h3>Semanas '+blFim.de+' a '+blFim.ate+' concluídas</h3>'+
         '<p>Você fechou as cinco sessões da semana '+w+'. '+
         (prox
           ? 'O bloco seguinte — '+esc(prox.nome)+', semanas '+prox.de+' a '+prox.ate+' — já está aqui: '+
-            'toque no nome dele logo abaixo do título do app.'
+            'toque em \u201cSemanas '+prox.de+'–'+prox.ate+'\u201d logo abaixo do título do app.'
           : 'O app vai até a semana '+NSEM+' — peça as semanas seguintes ao seu professor para dar sequência.')+
         ' Antes disso, exporte um backup dos seus registros em Ajustes.</p></div>'));
     }

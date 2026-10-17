@@ -1,11 +1,11 @@
-# TAF · Treino Semanas 1 a 8
+# TAF · Treino Semanas 1 a 12
 
 App de acompanhamento da preparação física para o TAF da Polícia Civil do Paraná.
 Roda no navegador do celular, instala na tela inicial e funciona sem internet.
 
 ## O que tem
 
-- As 5 sessões da semana (Academia 1, Extra 1, Academia 2, Extra 2, Extra 3) em dois blocos de 4 semanas: 1 a 4 (base) e 5 a 8 (potência e força)
+- As 5 sessões da semana (Academia 1, Extra 1, Academia 2, Extra 2, Extra 3) em três blocos de 4 semanas: 1 a 4 (base), 5 a 8 e 9 a 12 (potência e força)
 - Marcação de séries com progresso por sessão e por semana
 - Timer de descanso automático e cronômetro para isometrias
 - Registro de cargas, tempos, repetições e distâncias, com comparação entre as semanas

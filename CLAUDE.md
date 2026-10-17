@@ -16,12 +16,15 @@ Planilhas do professor em `C:\Users\Matheus\Documents\Treino\`, aba `Plan1`
 |---|---|---|
 | `TAF SEMANAS 1A4.xlsx` | semanas 1 a 4 | Bloco base |
 | `TAF SEMANAS 5A8.xlsx` | semanas 5 a 8 | Ganho de potência e força |
+| `TAF SEMANAS 9A12.xlsx` | semanas 9 a 12 | Ganho de potência e força |
 
-Estrutura das duas: coluna A tem os dias, e as quatro semanas daquela planilha
-ocupam as colunas C, G, K e O. Atenção: a planilha 5A8 chama as colunas dela de
-"SEMANA 1" a "SEMANA 4" — são as semanas **5 a 8** na contagem do app.
+Estrutura de todas: coluna A tem os dias, e as quatro semanas daquela planilha
+ocupam as colunas C, G, K e O. Atenção: as planilhas 5A8 e 9A12 chamam as colunas
+de "SEMANA 1" a "SEMANA 4" — são as semanas **5 a 8** e **9 a 12** na contagem do
+app. As duas também têm o mesmo título, por isso o seletor do cabeçalho mostra
+as semanas ("Semanas 9–12") e não o nome.
 
-Cinco sessões por semana, iguais nos dois blocos:
+Cinco sessões por semana, iguais em todos os blocos:
 
 | Dia | Sessão | Foco |
 |---|---|---|
@@ -31,9 +34,9 @@ Cinco sessões por semana, iguais nos dois blocos:
 | 4 | Extra 2 | Abdômen e corrida |
 | 5 | Extra 3 | Barra, remador, corrida |
 
-O app cobre **as semanas 1 a 8**. Ao fechar as cinco sessões da última semana de
-um bloco aparece um aviso: no fim do bloco 1 ele aponta para o bloco 2; no fim do
-bloco 2 ele pede as semanas seguintes ao professor. Nunca reinicia o ciclo
+O app cobre **as semanas 1 a 12**. Ao fechar as cinco sessões da última semana de
+um bloco aparece um aviso: se existe um bloco seguinte, ele aponta para lá; no fim
+do último ele pede as semanas seguintes ao professor. Nunca reinicia o ciclo
 sozinho.
 
 ### O que ficou pendente com o professor
@@ -51,6 +54,17 @@ Estas ficaram transcritas como estão na planilha, sem completar:
   corrida como "15 minutos corrida (5% esforço)". Ficaram no app como
   "percentual a confirmar". **Não chute o número**: 90% e 85% seriam palpites
   pela progressão das outras semanas, e palpite de carga não entra aqui.
+  (A planilha 9A12 usa 80/85/90/máximo nas mesmas linhas, o que reforça o
+  palpite — mas continua sendo palpite.)
+- **Semanas 9 a 12, Dia 3:** no aquecimento, o "3x" está só na linha dos giros
+  de anilha; os shoulder taps entraram nas mesmas 3 séries. O EMOM 15 não diz
+  quantas subidas de corda (A) nem quantos percursos de shuttle run (C) por
+  minuto, e o B está escrito como "30 isometria abdomen paralela", sem unidade —
+  ficou como 30 s.
+- **Semanas 9 a 12, Dia 4:** mesmo bloco de esforço máximo sem aparelho.
+- **Semana 12, Dia 5:** a planilha traz só "!!!!!TESTE CORRIDA!!!!!!", sem formato.
+- **Semana 10, Dia 2:** a corrida está como **4**x400 m, enquanto a semana 9 e os
+  blocos anteriores usam 6x400 m. Pode ser de propósito; foi transcrito como 4.
 
 ## Arquivos
 
@@ -72,18 +86,19 @@ fluxo completo.
 Tudo em um arquivo só, nesta ordem: `<style>` com os tokens e componentes, o
 HTML da casca, e um `<script>` com uma IIFE contendo dados, estado e render.
 
-### Dados do treino — `PLANO_A`, `PLANO_B` e `BLOCOS`
+### Dados do treino — `PLANO_A`, `PLANO_B`, `PLANO_C` e `BLOCOS`
 
-Cada planilha vira um array de 5 sessões: `PLANO_A` (semanas 1 a 4) e `PLANO_B`
-(semanas 5 a 8). São dois arrays e não um de 8 posições porque os exercícios
-mudam de um bloco para o outro — só os cinco dias é que se repetem.
+Cada planilha vira um array de 5 sessões: `PLANO_A` (semanas 1 a 4), `PLANO_B`
+(5 a 8) e `PLANO_C` (9 a 12). É um array por bloco, e não um comprido de semanas,
+porque os exercícios mudam de um bloco para o outro — só os cinco dias se repetem.
 
-`BLOCOS` amarra os dois e diz de que semana até que semana cada um vale:
+`BLOCOS` amarra todos e diz de que semana até que semana cada um vale:
 
 ```js
 var BLOCOS = [
   { nome:"Bloco base", curto:"Base", de:1, ate:4, plano: PLANO_A },
-  { nome:"Ganho de potência e força", curto:"Potência e força", de:5, ate:8, plano: PLANO_B }
+  { nome:"Ganho de potência e força", curto:"Potência e força", de:5, ate:8, plano: PLANO_B },
+  { nome:"Ganho de potência e força", curto:"Potência e força", de:9, ate:12, plano: PLANO_C }
 ];
 ```
 
@@ -95,14 +110,15 @@ Daí saem três funções que o resto do código usa no lugar do antigo `PLAN`:
 | `ws(w)` | a posição de `w` dentro do `sem` do bloco dela (0 a 3) |
 | `blocoDa(w)` | o registro de `BLOCOS` a que a semana pertence |
 
-`NSEM` é a última semana existente (hoje, 8). **Qualquer laço por semana vai de
+`NSEM` é a última semana existente (hoje, 12). **Qualquer laço por semana vai de
 1 a `NSEM` e busca o plano com `pl(w)` — nunca com um array fixo.** Um `pl(w)[d]`
 com o `w` errado devolve a sessão do outro bloco em silêncio, sem erro nenhum.
 
 Acrescentar um bloco novo é: mais um `PLANO_*`, mais uma linha em `BLOCOS`. O
 resto se ajusta sozinho, inclusive o seletor no cabeçalho.
 
-**Ids dos blocos:** `PLANO_A` usa `b1, b2…` e `PLANO_B` usa `c1, c2…`. É de
+**Ids dos blocos:** `PLANO_A` usa `b1, b2…`, `PLANO_B` usa `c1, c2…` e `PLANO_C`
+usa `d1, d2…` (o próximo bloco usa `e…`). É de
 propósito — o id entra na chave salva (`w7|a1|c2|0`), e ids repetidos entre
 blocos diferentes fariam o app casar exercícios que não têm nada a ver. O preço
 é que o "fantasma" da última vez (`prevSets`) não atravessa a virada de bloco:
@@ -180,7 +196,7 @@ sai de `passou()`, que devolve `null` quando não há meta.
 Chave `taf-pcpr-v1`. Campos persistidos listados em `FIELDS`; `snapshot()` monta
 o objeto exportado. Formato das chaves:
 
-A `{semana}` é sempre a contagem de 1 a 8 — não a numeração da planilha.
+A `{semana}` é sempre a contagem corrida (1 a 12) — não a numeração da planilha.
 
 ```
 done  →  "w{semana}|{idSessao}|{idBloco}|{indiceSerie}"
